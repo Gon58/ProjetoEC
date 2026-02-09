@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    container_name: app
+    volumes:
+      - .:/app
+    command: python -m src.main
+    environment:
+      - ENV=dev
