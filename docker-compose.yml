@@ -1,9 +1,71 @@
 services:
-  app:
+  ec-project-app:
     build: .
-    container_name: app
+    container_name: ec-project-app
     volumes:
       - .:/app
     command: python -m src.main
     environment:
       - ENV=dev
+
+      # Postgres (SQL)
+      - POSTGRES_HOST=ec-project-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=ec_project
+      - POSTGRES_USER=ec_project
+      - POSTGRES_PASSWORD=ec_project_pass
+
+      # Mongo (NoSQL)
+      - MONGO_HOST=ec-project-mongo
+      - MONGO_PORT=27017
+      - MONGO_DB=ec_project
+
+      # Chroma (Vector DB)
+      - CHROMA_HOST=ec-project-chroma
+      - CHROMA_PORT=8000
+
+    depends_on:
+      ec-project-postgres:
+        condition: service_healthy
+      ec-project-mongo:
+        condition: service_started
+      ec-project-chroma:
+        condition: service_started
+
+  ec-project-postgres:
+    image: postgres:16-alpine
+    container_name: ec-project-postgres
+    environment:
+      - POSTGRES_DB=ec_project
+      - POSTGRES_USER=ec_project
+      - POSTGRES_PASSWORD=ec_project_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ec_project_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ec_project -d ec_project"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  ec-project-mongo:
+    image: mongo:7
+    container_name: ec-project-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ec_project_mongodata:/data/db
+
+  ec-project-chroma:
+    image: chromadb/chroma:latest
+    container_name: ec-project-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - ec_project_chromadata:/chroma/chroma
+
+volumes:
+  ec_project_pgdata:
+  ec_project_mongodata:
+  ec_project_chromadata:
