@@ -15,16 +15,13 @@
 - [ ] O código está documentado (*Docstrings* nas funções principais).
 - [ ] Testei o código localmente e não quebra o que já estava feito.
 - [ ] Nenhuma password ou API Key foi enviada para o código (usei variáveis de ambiente / `.env`).
+- [ ] Os commits têm mensagens claras.
 
 ## Uso de Inteligência Artificial (Integridade Académica)
 
 - [ ] Confirmo que compreendo todo o código gerado por IA neste PR e sou capaz de o explicar na apresentação oral.
 - [ ] Todo o código gerado por IA foi revisto e testado por mim (humano).
 
-## CI/CD e Revisão
-
-- [ ] O Pipeline de CI do GitHub Actions (testes + linter) passou com sucesso.
-- [ ] Os commits têm mensagens claras.
 
 **Pessoas para rever (Peer Review):**
 
