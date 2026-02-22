@@ -19,9 +19,9 @@ import os
 import time
 from typing import Any
 
+import chromadb
 import psycopg
 from pymongo import MongoClient
-import chromadb
 
 
 def env(name: str, default: str) -> str:
