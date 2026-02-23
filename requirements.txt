@@ -1,2 +1,6 @@
 ruff
 pytest
+
+psycopg[binary]
+pymongo
+chromadb
