@@ -53,10 +53,12 @@ def test_steam_ingestion(appid, limit_samples=50):
     for s in samples[:5]:
         print(f"-> {s}...")
 
-def run_ingestion(appid, target_total=65000):
+def run_ingestion(appid, target_total=55000):
     client = MongoClient(host=os.getenv("MONGO_HOST", "ec-project-mongo"), port=27017)
     db = client[os.getenv("MONGO_DB", "ec_project")]
     collection = db["steam_reviews"]
+
+    logs_collection = db["system_logs"]
 
     keywords = ['skin', 'market', 'case', 'knife', 'trade', 'price', 'sticker', 'float', 'key']
     
@@ -114,6 +116,14 @@ def run_ingestion(appid, target_total=65000):
         except Exception as e:
             print(f"Erro na recolha: {e}")
             break
+
+    logs_collection.insert_one({
+        "event": "ingestion_run",
+        "appid": appid,
+        "records_reached": count,
+        "status": "success",
+        "timestamp": time.time()
+    })
 
     print(f"--- Processo terminado com {count} registos na coleção ---")
 
