@@ -1,6 +1,8 @@
-import unittest
 import os
+import unittest
+
 from pymongo import MongoClient
+
 
 class TestNoSQLStorage(unittest.TestCase):
     def setUp(self):

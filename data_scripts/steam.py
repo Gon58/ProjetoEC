@@ -1,15 +1,17 @@
-import requests
-import time
 import os
+import time
 
+import requests
 from pymongo import MongoClient
+
 
 def test_steam_ingestion(appid, limit_samples=50):
     """
     Testa a recolha de reviews da Steam focadas no mercado de skins.
     """
     # Keywords para garantir relevância ao Sistema de Suporte à Decisão
-    target_keywords = ['skin', 'market', 'case', 'knife', 'trade', 'price', 'sticker', 'float', 'key']
+    target_keywords = ['skin', 'market', 'case', 'knife', 'trade',
+                        'price', 'sticker', 'float', 'key']
     
     url = f'https://store.steampowered.com/appreviews/{appid}?json=1&filter=recent&language=english'
     cursor = '*'
