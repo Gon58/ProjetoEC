@@ -1,0 +1,1 @@
+# Este arquivo deve estar presente para que o diretório `tests` seja tratado como um pacote.
