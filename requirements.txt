@@ -2,6 +2,9 @@ ruff
 pytest
 python-dotenv
 
+fastapi
+uvicorn[standard]
+
 psycopg[binary]
 pymongo
 chromadb
