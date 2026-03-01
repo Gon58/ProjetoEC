@@ -2,9 +2,14 @@ ruff
 pytest
 requests
 pandas
+python-dotenv
+
+fastapi
+uvicorn[standard]
+httpx
+
 psycopg[binary]
 pymongo
 chromadb
 SQLAlchemy>=2.0.0
 psycopg2-binary>=2.9.0
-python-dotenv

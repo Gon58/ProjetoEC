@@ -2,9 +2,11 @@ services:
   ec-project-app:
     build: .
     container_name: ec-project-app
+    ports:
+      - "8080:8080"
     volumes:
       - .:/app
-    command: sh -c "python -m src.main && tail -f /dev/null"
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload
     environment:
       - ENV=dev
 
