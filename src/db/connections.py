@@ -5,6 +5,7 @@ import chromadb
 import psycopg
 from pymongo import MongoClient
 
+
 def check_postgres() -> Dict[str, Any]:
     """Verifica conexão com PostgreSQL."""
     try:
