@@ -4,13 +4,11 @@ import os
 
 import pandas as pd
 
-
 def decode_base64(encoded_str):
     try:
         return base64.b64decode(encoded_str).decode("utf-8")
     except Exception:
         return encoded_str
-
 
 def process_kaggle_dataset(input_dir, output_file):
     index_file = os.path.join(input_dir, "item_index.csv")
@@ -64,7 +62,6 @@ def process_kaggle_dataset(input_dir, output_file):
     df_result = pd.DataFrame(results)
     df_result.to_csv(output_file, index=False, quoting=csv.QUOTE_NONNUMERIC)
     print(f"Successfully created {output_file} with {len(df_result)} rows.")
-
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))

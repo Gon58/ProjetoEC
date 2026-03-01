@@ -1,13 +1,13 @@
-import base64
 import csv
 import os
-from decimal import ROUND_HALF_UP, Decimal
 
 import pandas as pd
 import requests
 from dotenv import load_dotenv
 from sqlalchemy import Column, Integer, Numeric, String, create_engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
+
+from utils import decode_base64, to_decimal_2
 
 load_dotenv()
 
@@ -56,22 +56,6 @@ def create_engine_and_session():
 def create_tables(engine):
     """Cria as tabelas."""
     Base.metadata.create_all(engine)
-
-
-def to_decimal_2(value) -> Decimal:
-    """
-    Converte valor para Decimal com 2 casas decimais.
-    """
-    if pd.isna(value) or value is None:
-        return Decimal("0.00")
-    return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-
-def decode_base64(encoded_str):
-    try:
-        return base64.b64decode(encoded_str).decode("utf-8")
-    except Exception:
-        return encoded_str
 
 
 def fetch_skinport_data(app_id=730, currency="USD", tradable=True):
@@ -173,8 +157,8 @@ def load_from_csv_to_db(csv_path: str, session: Session) -> None:
 
 def main() -> None:
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    kaggle_dir = os.path.join(base_dir, "..", "data_scripts", "kaggle_dataset")
-    output_csv = os.path.join(base_dir, "..", "data_scripts", "combined_data.csv")
+    kaggle_dir = os.path.join(base_dir, "kaggle_dataset")
+    output_csv = os.path.join(base_dir, "combined_data.csv")
 
     skinport_items = fetch_skinport_data()
     kaggle_items = get_kaggle_processed_data(kaggle_dir)
