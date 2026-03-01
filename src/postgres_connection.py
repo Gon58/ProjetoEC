@@ -65,7 +65,7 @@ def load_products_from_csv(csv_path: str, session: Session) -> None:
         session.commit()
 
 def print_tables_content(session: Session):
-    """Imprime o conteúdo das tabelas."""
+    """Dá print do conteúdo das tabelas."""
 
     skins = session.query(Skin).all()
 
