@@ -1,7 +1,10 @@
 import unittest
 from unittest.mock import patch
+
 from fastapi.testclient import TestClient
-from main import app 
+
+from main import app
+
 
 class TestAPIHealth(unittest.TestCase):
     def setUp(self):

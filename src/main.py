@@ -1,12 +1,12 @@
 import os
 from datetime import datetime, timezone
-from typing import Dict, Any
+from typing import Any, Dict
 
+import chromadb
+import psycopg
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-import psycopg
 from pymongo import MongoClient
-import chromadb
 
 app = FastAPI(title="API Backend")
 
