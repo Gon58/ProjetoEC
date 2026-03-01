@@ -5,7 +5,6 @@ import requests
 BASE_URL = "https://api.skinport.com/v1/items"
 HEADERS = {"Accept-Encoding": "br", "User-Agent": "PythonSkinPortClient/1.0"}
 
-
 def fetch_items(app_id=730, currency="USD", tradable=True):
     params = {"app_id": app_id, "currency": currency, "tradable": 1 if tradable else 0}
 
@@ -15,7 +14,6 @@ def fetch_items(app_id=730, currency="USD", tradable=True):
         raise Exception(f"HTTP {res.status_code} | {res.text}")
 
     return res.json()
-
 
 if __name__ == "__main__":
     items = fetch_items()

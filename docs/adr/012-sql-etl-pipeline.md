@@ -4,7 +4,7 @@
 
 **Status:** Aceite
 
-**Responsável/Autores:** Gonçalo Alves
+**Responsável/Autores:** Gonçalo Alves e Pedro Teixeira
 
 ## 1. Contexto e Problema
 

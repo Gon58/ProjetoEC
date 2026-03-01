@@ -4,7 +4,6 @@ import os
 
 import pandas as pd
 
-
 def decode_base64(encoded_str):
     try:
         return base64.b64decode(encoded_str).decode("utf-8")
