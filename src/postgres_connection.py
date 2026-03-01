@@ -136,7 +136,7 @@ def get_kaggle_processed_data(kaggle_dir):
                     "median_price": prices.median(),
                     "quantity_sold": int(sells.sum())
                 })
-            except Exception as e:
+            except Exception:
                 pass
         
         if (i + 1) % 5000 == 0:
