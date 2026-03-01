@@ -16,10 +16,6 @@ from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-
 from postgres_connection import (
     Base,
     Skin,
@@ -27,8 +23,9 @@ from postgres_connection import (
     get_kaggle_processed_data,
     load_from_csv_to_db,
 )
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from utils import decode_base64, to_decimal_2
-
 
 
 class TestPostgresIntegration(unittest.TestCase):
@@ -118,7 +115,15 @@ class TestPostgresIntegration(unittest.TestCase):
         # Create a temporary CSV
         temp_csv = "temp_test_db.csv"
         csv_content = [
-            ["market_hash_name", "currency", "min_price", "max_price", "mean_price", "median_price", "quantity_sold"],
+            [
+                "market_hash_name",
+                "currency",
+                "min_price",
+                "max_price",
+                "mean_price",
+                "median_price",
+                "quantity_sold",
+            ],
             ["AK-47 | Redline", "USD", "10.5", "20.0", "15.0", "14.5", "100"],
         ]
 

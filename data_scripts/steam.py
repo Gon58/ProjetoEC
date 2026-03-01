@@ -14,28 +14,9 @@ def test_steam_ingestion(appid, limit_samples=50):
     """
     # Keywords para garantir relevância ao Sistema de Suporte à Decisão
     target_keywords = [
-        "skin",
-        "market",
-        "case",
-        "knife",
-        "trade",
-        "price",
-        "sticker",
-        "float",
-        "key",
-        "wear",
-        "pattern",
-        "buff",
-        "investment",
-        "stattrak",
-        "fn",
-        "mw",
-        "ft",
-        "ww",
-        "bs",
-        "fade",
-        "doppler",
-        "souvenir",
+        "skin", "market", "case", "knife", "trade", "price", "sticker",
+        "float", "key", "wear", "pattern", "buff", "investment", "stattrak",
+        "fn", "mw", "ft", "ww", "bs", "fade", "doppler", "souvenir",
     ]
 
     url = f"https://store.steampowered.com/appreviews/{appid}?json=1&filter=recent&language=english"

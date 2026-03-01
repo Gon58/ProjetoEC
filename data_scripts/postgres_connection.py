@@ -6,7 +6,6 @@ import requests
 from dotenv import load_dotenv
 from sqlalchemy import Column, Integer, Numeric, String, create_engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
-
 from utils import decode_base64, to_decimal_2
 
 load_dotenv()
