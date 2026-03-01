@@ -1,5 +1,6 @@
 ruff
 pytest
+python-dotenv
 
 psycopg[binary]
 pymongo

@@ -2,16 +2,21 @@ import os
 import time
 
 import requests
+from dotenv import load_dotenv
 from pymongo import MongoClient
 
+load_dotenv()
 
 def test_steam_ingestion(appid, limit_samples=50):
     """
     Testa a recolha de reviews da Steam focadas no mercado de skins.
     """
     # Keywords para garantir relevância ao Sistema de Suporte à Decisão
-    target_keywords = ['skin', 'market', 'case', 'knife', 'trade',
-                        'price', 'sticker', 'float', 'key']
+    target_keywords = [
+        'skin', 'market', 'case', 'knife', 'trade', 'price', 'sticker', 
+        'float', 'key', 'wear', 'pattern', 'buff', 'investment', 'stattrak',
+        'fn', 'mw', 'ft', 'ww', 'bs', 'fade', 'doppler', 'souvenir'
+    ]
     
     url = f'https://store.steampowered.com/appreviews/{appid}?json=1&filter=recent&language=english'
     cursor = '*'
@@ -49,11 +54,15 @@ def test_steam_ingestion(appid, limit_samples=50):
     print("\n--- Resultados do Teste ---")
     print(f"Total de reviews lidas: {total_found}")
     print(f"Reviews úteis para o RAG (com keywords): {relevant_found}")
-    print(f"Taxa de relevância: {(relevant_found/total_found)*100:.2f}%")
-    
-    print("\n--- Amostra de Dados (Primeiros 5 úteis) ---")
-    for s in samples[:5]:
-        print(f"-> {s}...")
+    if total_found > 0:
+        print(f"Taxa de relevância: {(relevant_found/total_found)*100:.2f}%")
+        print("\n--- Amostra de Dados (Primeiros 5 úteis) ---")
+        for s in samples[:5]:
+            print(f"-> {s}...")
+    else:
+        print("Nenhuma review encontrada para análise.")
+
+    return (total_found > 0)
 
 def run_ingestion(appid, target_total=55000):
     client = MongoClient(host=os.getenv("MONGO_HOST", "ec-project-mongo"), port=27017)
@@ -130,6 +139,14 @@ def run_ingestion(appid, target_total=55000):
     print(f"--- Processo terminado com {count} registos na coleção ---")
 
 if __name__ == "__main__":
-    # 730 é o ID do Counter-Strike
-    #test_steam_ingestion(appid=730)
-    run_ingestion(appid=730)
+    
+    steam_id = int(os.getenv("STEAM_APP_ID", 123))
+
+    is_api_healthy = test_steam_ingestion(appid=steam_id, limit_samples=10)
+    
+    if is_api_healthy:
+        print(f"✅ API is healthy. Starting full ingestion for appid {steam_id}...")
+        run_ingestion(appid=steam_id)
+    else:
+        print("❌ Ingestion aborted: API connectivity issues.")
+
