@@ -1,6 +1,9 @@
 ruff
 pytest
-
+requests
+pandas
 psycopg[binary]
 pymongo
 chromadb
+SQLAlchemy>=2.0.0
+psycopg2-binary>=2.9.0
