@@ -4,6 +4,7 @@ python-dotenv
 
 fastapi
 uvicorn[standard]
+httpx
 
 psycopg[binary]
 pymongo
