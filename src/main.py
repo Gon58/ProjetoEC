@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
+
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from src.db.connections import check_postgres, check_mongodb, check_chromadb
+
+from src.db.connections import check_chromadb, check_mongodb, check_postgres
 
 app = FastAPI(title="API Backend")
 
