@@ -1,13 +1,6 @@
-import os
 from datetime import datetime, timezone
-from typing import Any, Dict
-
-import chromadb
-import psycopg
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from pymongo import MongoClient
-
 from src.db.connections import check_postgres, check_mongodb, check_chromadb
 
 app = FastAPI(title="API Backend")
