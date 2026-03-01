@@ -3,6 +3,7 @@ pytest
 
 fastapi
 uvicorn[standard]
+httpx
 
 psycopg[binary]
 pymongo
