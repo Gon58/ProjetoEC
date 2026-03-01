@@ -1,14 +1,13 @@
+import base64
 import csv
 import os
-import requests
-import pandas as pd
-import base64
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 
+import pandas as pd
+import requests
+from dotenv import load_dotenv
 from sqlalchemy import Column, Integer, Numeric, String, create_engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
-
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -18,15 +17,12 @@ if not POSTGRES_URL:
     raise ValueError("POSTGRES_URL must be set in environment variables or .env file")
 
 
-
 Base = declarative_base()
 SessionLocal = sessionmaker()
 
 SKINPORT_URL = "https://api.skinport.com/v1/items"
-HEADERS = {
-    "Accept-Encoding": "br",
-    "User-Agent": "PythonSkinPortClient/1.0"
-}
+HEADERS = {"Accept-Encoding": "br", "User-Agent": "PythonSkinPortClient/1.0"}
+
 
 class Skin(Base):
     __tablename__ = "skin"
@@ -34,10 +30,10 @@ class Skin(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     currency = Column(String)
-    min_price = Column(Numeric(10,2))
-    max_price = Column(Numeric(10,2))
-    mean_price = Column(Numeric(10,2))
-    median_price = Column(Numeric(10,2))
+    min_price = Column(Numeric(10, 2))
+    max_price = Column(Numeric(10, 2))
+    mean_price = Column(Numeric(10, 2))
+    median_price = Column(Numeric(10, 2))
     quantity_sold = Column(Integer)
 
     def __repr__(self) -> str:
@@ -49,15 +45,18 @@ class Skin(Base):
             f"max_price='{self.max_price}')"
         )
 
+
 def create_engine_and_session():
     """Cria engine e sessão."""
     engine = create_engine(POSTGRES_URL, echo=False)
     SessionLocal.configure(bind=engine)
     return engine
 
+
 def create_tables(engine):
     """Cria as tabelas."""
     Base.metadata.create_all(engine)
+
 
 def to_decimal_2(value) -> Decimal:
     """
@@ -67,82 +66,87 @@ def to_decimal_2(value) -> Decimal:
         return Decimal("0.00")
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
+
 def decode_base64(encoded_str):
     try:
-        return base64.b64decode(encoded_str).decode('utf-8')
+        return base64.b64decode(encoded_str).decode("utf-8")
     except Exception:
         return encoded_str
 
+
 def fetch_skinport_data(app_id=730, currency="USD", tradable=True):
     print("Fetching data from Skinport API...")
-    params = {
-        "app_id": app_id,
-        "currency": currency,
-        "tradable": 1 if tradable else 0
-    }
+    params = {"app_id": app_id, "currency": currency, "tradable": 1 if tradable else 0}
     res = requests.get(SKINPORT_URL, params=params, headers=HEADERS)
     if res.status_code != 200:
         print(f"Error fetching Skinport: {res.status_code}")
         return []
-    
+
     items = res.json()
     formatted_items = []
     for item in items:
-        formatted_items.append({
-            "market_hash_name": item.get("market_hash_name"),
-            "currency": item.get("currency"),
-            "min_price": item.get("min_price"),
-            "max_price": item.get("max_price"),
-            "mean_price": item.get("mean_price"),
-            "median_price": item.get("median_price"),
-            "quantity_sold": item.get("quantity") 
-        })
+        formatted_items.append(
+            {
+                "market_hash_name": item.get("market_hash_name"),
+                "currency": item.get("currency"),
+                "min_price": item.get("min_price"),
+                "max_price": item.get("max_price"),
+                "mean_price": item.get("mean_price"),
+                "median_price": item.get("median_price"),
+                "quantity_sold": item.get("quantity"),
+            }
+        )
     return formatted_items
+
 
 def get_kaggle_processed_data(kaggle_dir):
     index_file = os.path.join(kaggle_dir, "item_index.csv")
     items_dir = os.path.join(kaggle_dir, "items")
-    
+
     if not os.path.exists(index_file):
         print(f"Index file not found: {index_file}")
         return []
-        
+
     df_index = pd.read_csv(index_file)
     results = []
     total_items = len(df_index)
-    
+
     print(f"Processing {total_items} Kaggle items...")
     for i, row in df_index.iterrows():
-        base64_name = row['item_hash_name_base64']
-        file_name = row['file_name']
-        
+        base64_name = row["item_hash_name_base64"]
+        file_name = row["file_name"]
+
         market_hash_name = decode_base64(base64_name)
         item_path = os.path.join(items_dir, file_name)
-        
+
         if os.path.exists(item_path):
             try:
                 df_item = pd.read_csv(item_path)
-                if df_item.empty: continue
-                
-                prices = df_item['price_dollar']
-                sells = df_item['sells']
-                
-                results.append({
-                    "market_hash_name": market_hash_name,
-                    "currency": "USD",
-                    "min_price": prices.min(),
-                    "max_price": prices.max(),
-                    "mean_price": prices.mean(),
-                    "median_price": prices.median(),
-                    "quantity_sold": int(sells.sum())
-                })
+                if df_item.empty:
+                    continue
+
+                prices = df_item["price_dollar"]
+                sells = df_item["sells"]
+
+                results.append(
+                    {
+                        "market_hash_name": market_hash_name,
+                        "currency": "USD",
+                        "min_price": prices.min(),
+                        "max_price": prices.max(),
+                        "mean_price": prices.mean(),
+                        "median_price": prices.median(),
+                        "quantity_sold": int(sells.sum()),
+                    }
+                )
             except Exception:
                 pass
-        
+
         if (i + 1) % 5000 == 0:
             print(f"Processed {i + 1}/{total_items} Kaggle items...")
 
     return results
+
 
 def load_from_csv_to_db(csv_path: str, session: Session) -> None:
     print(f"Loading data from {csv_path} to database...")
@@ -166,6 +170,7 @@ def load_from_csv_to_db(csv_path: str, session: Session) -> None:
         session.commit()
     print(f"Successfully loaded {count} items.")
 
+
 def main() -> None:
     base_dir = os.path.dirname(os.path.abspath(__file__))
     kaggle_dir = os.path.join(base_dir, "..", "data_scripts", "kaggle_dataset")
@@ -177,7 +182,7 @@ def main() -> None:
     print("Combining datasets...")
     df_skinport = pd.DataFrame(skinport_items)
     df_kaggle = pd.DataFrame(kaggle_items)
-    
+
     df_combined = pd.concat([df_skinport, df_kaggle], ignore_index=True)
     df_combined.to_csv(output_csv, index=False, quoting=csv.QUOTE_NONNUMERIC)
     print(f"Combined data saved to {output_csv}")
@@ -185,7 +190,7 @@ def main() -> None:
     engine = create_engine_and_session()
     create_tables(engine)
     session = SessionLocal()
-    
+
     try:
         load_from_csv_to_db(output_csv, session)
     except Exception as e:
@@ -193,6 +198,7 @@ def main() -> None:
         session.rollback()
     finally:
         session.close()
+
 
 if __name__ == "__main__":
     main()
