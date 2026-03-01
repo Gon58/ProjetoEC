@@ -10,17 +10,11 @@ from utils import decode_base64, to_decimal_2
 
 load_dotenv()
 
-POSTGRES_URL = os.getenv("POSTGRES_URL")
-
-if not POSTGRES_URL:
-    raise ValueError("POSTGRES_URL must be set in environment variables or .env file")
-
 Base = declarative_base()
 SessionLocal = sessionmaker()
 
 SKINPORT_URL = "https://api.skinport.com/v1/items"
 HEADERS = {"Accept-Encoding": "br", "User-Agent": "PythonSkinPortClient/1.0"}
-
 
 class Skin(Base):
     __tablename__ = "skin"
@@ -46,7 +40,10 @@ class Skin(Base):
 
 def create_engine_and_session():
     """Cria engine e sessão."""
-    engine = create_engine(POSTGRES_URL, echo=False)
+    postgres_url = os.getenv("POSTGRES_URL")
+    if not postgres_url:
+        raise ValueError("POSTGRES_URL must be set in environment variables or .env file")
+    engine = create_engine(postgres_url, echo=False)
     SessionLocal.configure(bind=engine)
     return engine
 
