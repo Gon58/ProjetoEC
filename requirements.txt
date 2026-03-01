@@ -1,6 +1,9 @@
 ruff
 pytest
 
+fastapi
+uvicorn[standard]
+
 psycopg[binary]
 pymongo
 chromadb
