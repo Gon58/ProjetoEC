@@ -8,7 +8,16 @@ from decimal import Decimal, ROUND_HALF_UP
 from sqlalchemy import Column, Integer, Numeric, String, create_engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
-POSTGRES_URL = os.getenv("POSTGRES_URL", "postgresql://ec_project:ec_project_pass@localhost:5433/ec_project")
+from dotenv import load_dotenv
+
+load_dotenv()
+
+POSTGRES_URL = os.getenv("POSTGRES_URL")
+
+if not POSTGRES_URL:
+    raise ValueError("POSTGRES_URL must be set in environment variables or .env file")
+
+
 
 Base = declarative_base()
 SessionLocal = sessionmaker()
