@@ -1,8 +1,9 @@
-from sqlalchemy import create_engine, Column, Integer, String, Numeric
-from sqlalchemy.orm import sessionmaker, Session, declarative_base
-import os
 import csv
+import os
 from decimal import Decimal, ROUND_HALF_UP
+
+from sqlalchemy import Column, Integer, Numeric, String, create_engine
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 POSTGRES_URL = os.getenv("POSTGRES_URL", "postgresql://ec_project:ec_project_pass@localhost:5433/ec_project")
 
@@ -22,7 +23,13 @@ class Skin(Base):
     quantity_sold = Column(Integer)
 
     def __repr__(self) -> str:
-        return f"Skin(id={self.id}, name='{self.name}, currency='{self.currency}', min_price='{self.min_price}', max_price='{self.max_price}')"
+        return (
+            f"Skin(id={self.id}, "
+            f"name='{self.name}', "
+            f"currency='{self.currency}', "
+            f"min_price='{self.min_price}', "
+            f"max_price='{self.max_price}')"
+        )
 
 def create_engine_and_session():
     """Cria engine e sessão."""
@@ -65,7 +72,7 @@ def load_products_from_csv(csv_path: str, session: Session) -> None:
         session.commit()
 
 def print_tables_content(session: Session):
-    """Imprime o conteúdo das tabelas."""
+    """Dá print do conteúdo das tabelas."""
 
     skins = session.query(Skin).all()
 
