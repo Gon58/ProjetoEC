@@ -1,2 +1,3 @@
 .env
 data_scripts/kaggle_dataset/
+pycache__
