@@ -26,12 +26,17 @@ services:
       - CHROMA_HOST=ec-project-chroma
       - CHROMA_PORT=8000
 
+      # Ollama (Embeddings)
+      - OLLAMA_HOST=http://ec-project-ollama:11434
+
     depends_on:
       ec-project-postgres:
         condition: service_healthy
       ec-project-mongo:
         condition: service_started
       ec-project-chroma:
+        condition: service_started
+      ec-project-ollama:
         condition: service_started
 
   ec-project-postgres:
@@ -67,7 +72,18 @@ services:
     volumes:
       - ec_project_chromadata:/chroma/chroma
 
+  ec-project-ollama:
+    image: ollama/ollama:latest
+    container_name: ec-project-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ec_project_ollamadata:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+
 volumes:
   ec_project_pgdata:
   ec_project_mongodata:
   ec_project_chromadata:
+  ec_project_ollamadata:

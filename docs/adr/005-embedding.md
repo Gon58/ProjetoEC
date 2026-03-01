@@ -1,8 +1,8 @@
-# ADR 004: Modelo de Embedding para Vetorização
+# ADR 005: Modelo de Embedding para Vetorização
 
-**Data:** 2026-02-24
+**Data:** 2026-03-01
 
-**Status:** Proposto
+**Status:** Aceito
 
 **Responsável/Autores:** André Carvalho, João Costa
 
@@ -19,39 +19,45 @@ A escolha do modelo de embedding é crítica para o trade-off entre **latência,
 
 ## 2. Opções Consideradas
 
-* **Opção 1:** OpenAI `text-embedding-3-small` (API).
+* **Opção 1:** Ollama com  `embeddinggemma` (local, offline).
 * **Opção 2:** Sentence-Transformers `all-MiniLM-L6-v2` (local).
 * **Opção 3:** Ollama com `nomic-embed-text` (local, offline).
 * **Opção 4:** Cohere Embed API (cloud, balanço custo/qualidade).
 
 ## 3. Decisão
 
-**Fase 1 (MVP):** Sentence-Transformers `all-MiniLM-L6-v2` (local, sem dependências externas)  
-**Fase 2 (escalamento):** Avaliar posteriormente possível migração para `all-mpnet-base-v2` ou explorar Ollama mediante latencia
+**Implementado:** Ollama com modelo `embeddinggemma` (local, containerizado com Docker)
 
 ## 4. Justificação
 
-### Por que `all-MiniLM-L6-v2`?
+### Por que Ollama com `embeddinggemma`?
 
 **Vantagens:**
 
-- **Latência:** ~50-100ms por embedding.
-- **Tamanho:** 384 dimensõesm gasta menos espaço comparado a outros modelos.
-- **Privacidade:** 100% local, dados permanecem *on-premisses* .
-- **Simplicidade:** Integra direto com Python.
-- **Custo:** Zero, também não tem rate limits (*open-source*).
-- **Batch-friendly:** Processa 1000 skins em ~1-2 segundos (não testado*).
+- **Latência:** ~100-200ms por embedding, aceitável para o requisito < 10s.
+- **Dimensões:** 768 dimensões, melhor qualidade semântica.
+- **Privacidade:** 100% local, dados permanecem *on-premises*.
+- **Containerização:** Integra perfeitamente com arquitetura Docker existente (postgres, mongo, chroma).
+- **Sem dependências API:** Zero custo, sem rate limits, sem chaves de API.
+- **Batch-friendly:** Suporta processamento em lote via `embed_texts()`.
+- **Ecosystem:** Ollama permite trocar de modelo facilmente se necessário.
+- **Auto-download:** Modelo é baixado automaticamente na primeira utilização.
 
 **Trade-offs:**
 
-- Menos preciso que modelos maiores (`all-mpnet`: 768 dims) - ~2-5% queda em *retrieval accuracy*.
-- Não vai conseguir perceber as nuances do domínio devido ao menor número de dims .
+- Requer mais memória RAM.
+- Adiciona um serviço extra ao Docker Compose.
 
-### Estratégia
+### Arquitetura Implementada
 
-1. **Baseline:** Deploy com `all-MiniLM-L6-v2`, medir tempo real de resposta
-2. **Monitorizar:** Se latência < 5s → aceitar MVP  
-3. **Escalar:** Se latência > 5s:
-   - Tentar PEFT/LoRA (fine-tuning leve)
-   - Ou migrar para `all-mpnet-base-v2`
-   - Último recurso: Ollama para controlo total
+1. **Serviço Ollama:** Container `ec-project-ollama` na porta 11434.
+2. **Embedding Service:** `src/services/embeddings.py` com funções `embed_text()` e `embed_texts()` (sempre usa embeddinggemma).
+3. **Integração Chroma:** `src/db/connections.py` com `index_document()` e `search_documents()`.
+4. **API Endpoints:** `/index` (POST) e `/search` (POST) no `src/main.py`.
+5. **Testes:** `tests/test_vectorial.py` com unittest + mocks, smoke tests validados.
+
+### Estratégia de Escalamento
+
+1. **MVP:** Deployment com `embeddinggemma` já concluído.
+2. **Monitorizar:** Medir latência real em produção, validar < 10s.
+3. **Futuro:** Se precisar de melhor performance → avaliar outros modelos Ollama (mxbai-embed-large, etc).
