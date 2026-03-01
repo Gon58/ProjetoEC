@@ -15,7 +15,6 @@ POSTGRES_URL = os.getenv("POSTGRES_URL")
 if not POSTGRES_URL:
     raise ValueError("POSTGRES_URL must be set in environment variables or .env file")
 
-
 Base = declarative_base()
 SessionLocal = sessionmaker()
 
