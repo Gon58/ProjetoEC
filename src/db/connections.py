@@ -54,3 +54,10 @@ def check_chromadb() -> Dict[str, Any]:
         return {"status": "up", "message": "Connected"}
     except Exception as e:
         return {"status": "down", "message": str(e)}
+
+
+def get_chroma_client() -> chromadb.HttpClient:
+    """Obtém um cliente ChromaDB configurado com host e porta do ambiente."""
+    chroma_host = os.getenv("CHROMA_HOST", "localhost")
+    chroma_port = int(os.getenv("CHROMA_PORT", "8000"))
+    return chromadb.HttpClient(host=chroma_host, port=chroma_port)

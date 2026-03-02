@@ -1,4 +1,4 @@
-# ADR 011: Estratégia de Health Check da API
+# ADR 009: Estratégia de Health Check da API
 
 **Data:** 2026-02-28
 
