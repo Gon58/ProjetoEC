@@ -15,9 +15,9 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.services.embeddings import embed_text, embed_texts, ensure_model
-from src.db.connections import get_chroma_client
-from src.db.vectorial import index_document, search_documents
+from src.db.connections import get_chroma_client  # noqa: E402
+from src.db.vectorial import index_document, search_documents  # noqa: E402
+from src.services.embeddings import embed_text, embed_texts, ensure_model  # noqa: E402
 
 
 def test_embedding_pipeline() -> bool:
@@ -28,27 +28,27 @@ def test_embedding_pipeline() -> bool:
         True se todos os testes passaram, False caso contrário.
     """
     print(f"\n{'='*60}")
-    print(f"Testando pipeline de embedding (embeddinggemma)")
+    print("Testando pipeline de embedding (embeddinggemma)")
     print(f"{'='*60}")
 
     try:
         # 1. Teste: Garantir que modelo está disponível
-        print(f"\n[1/5] Verificando/baixando modelo 'embeddinggemma'...")
+        print("\n[1/5] Verificando/baixando modelo 'embeddinggemma'...")
         ensure_model("embeddinggemma")
-        print(f"✓ Modelo 'embeddinggemma' disponível")
+        print("✓ Modelo 'embeddinggemma' disponível")
 
         # 2. Teste: Embedding de texto único
-        print(f"\n[2/5] Gerando embedding para texto único...")
+        print("\n[2/5] Gerando embedding para texto único...")
         text_single = "Machine learning is transforming technology"
         embedding_single = embed_text(text_single)
         print(f"✓ Embedding gerado: {len(embedding_single)} dimensões")
         
         if len(embedding_single) == 0:
-            print(f"✗ ERRO: Embedding vazio")
+            print("✗ ERRO: Embedding vazio")
             return False
 
         # 3. Teste: Embeddings de múltiplos textos
-        print(f"\n[3/5] Gerando embeddings para múltiplos textos...")
+        print("\n[3/5] Gerando embeddings para múltiplos textos...")
         texts_batch = [
             "Artificial intelligence in healthcare",
             "Deep learning for computer vision",
@@ -58,18 +58,18 @@ def test_embedding_pipeline() -> bool:
         print(f"✓ {len(embeddings_batch)} embeddings gerados")
         
         if len(embeddings_batch) != len(texts_batch):
-            print(f"✗ ERRO: Número de embeddings não corresponde aos textos")
+            print("✗ ERRO: Número de embeddings não corresponde aos textos")
             return False
 
         # 4. Teste: Indexação no ChromaDB
-        print(f"\n[4/5] Indexando documentos no ChromaDB...")
+        print("\n[4/5] Indexando documentos no ChromaDB...")
         collection_name = "test_embeddings"
         
         # Limpa coleção anterior se existir
         try:
             client = get_chroma_client()
             client.delete_collection(collection_name)
-        except:
+        except Exception:
             pass  # Coleção não existe, tudo bem
         
         doc_text = """
@@ -93,7 +93,7 @@ def test_embedding_pipeline() -> bool:
         print(f"✓ Documento indexado: {result['chunks_indexed']} chunks")
 
         # 5. Teste: Busca vetorial
-        print(f"\n[5/5] Executando busca vetorial...")
+        print("\n[5/5] Executando busca vetorial...")
         search_result = search_documents(
             query="What is deep learning?",
             collection_name=collection_name,
@@ -114,17 +114,17 @@ def test_embedding_pipeline() -> bool:
         # Limpa coleção de teste
         try:
             client.delete_collection(collection_name)
-        except:
+        except Exception:
             pass
 
         print(f"\n{'='*60}")
-        print(f"✓ TODOS OS TESTES PASSARAM")
+        print("✓ TODOS OS TESTES PASSARAM")
         print(f"{'='*60}")
         return True
 
     except Exception as e:
         print(f"\n{'='*60}")
-        print(f"✗ ERRO ao testar embedding:")
+        print("✗ ERRO ao testar embedding:")
         print(f"  {type(e).__name__}: {e}")
         print(f"{'='*60}")
         return False

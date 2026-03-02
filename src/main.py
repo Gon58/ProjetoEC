@@ -73,7 +73,11 @@ def index_document_endpoint(request: DocumentIndexRequest):
         metadata=request.metadata,
     )
     
-    status_code = status.HTTP_200_OK if result["status"] == "success" else status.HTTP_400_BAD_REQUEST
+    if result["status"] == "success":
+        status_code = status.HTTP_200_OK
+    else:
+        status_code = status.HTTP_400_BAD_REQUEST
+
     return JSONResponse(content=result, status_code=status_code)
 
 
@@ -96,7 +100,10 @@ def search_documents_endpoint(request: SearchRequest):
         n_results=request.n_results,
     )
     
-    status_code = status.HTTP_200_OK if result["status"] == "success" else status.HTTP_400_BAD_REQUEST
+    if result["status"] == "success":
+        status_code = status.HTTP_200_OK
+    else:
+        status_code = status.HTTP_400_BAD_REQUEST
     return JSONResponse(content=result, status_code=status_code)
 
 

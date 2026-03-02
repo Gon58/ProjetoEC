@@ -1,4 +1,4 @@
-# ADR 012: Pipeline ETL para SQL
+# ADR 010: Pipeline ETL para SQL
 
 **Data:** 2025-03-01
 
