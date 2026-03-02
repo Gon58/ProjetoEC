@@ -1,5 +1,7 @@
 ruff
 pytest
+requests
+pandas
 python-dotenv
 
 fastapi
