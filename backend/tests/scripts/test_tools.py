@@ -4,12 +4,17 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.services.tools import consultar_estatisticas_skin, pesquisar_opiniao_comunidade
+
+from src.services.tools import (  # noqa: E402
+    consultar_estatisticas_skin,
+    pesquisar_opiniao_comunidade,
+)
+
 
 def main():
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("🧪 TESTE ÀS TOOLS DO AGENTE (SEMANA 6)")
-    print("="*50)
+    print("=" * 50)
 
     # Teste 1: A Tool do PostgreSQL
     print("\n[1] A testar Tool do SQL (Determinístico)...")
@@ -21,9 +26,10 @@ def main():
     resultado_rag = pesquisar_opiniao_comunidade("O que o pessoal acha da AK-47 Vulcan?")
     print(f"Resposta da Tool RAG:\n{resultado_rag}")
 
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("TESTES CONCLUÍDOS")
-    print("="*50)
+    print("=" * 50)
+
 
 if __name__ == "__main__":
     main()
