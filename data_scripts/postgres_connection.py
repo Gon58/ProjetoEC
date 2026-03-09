@@ -65,7 +65,7 @@ def fetch_skinport_data(app_id=730, currency="USD", tradable=True):
         try:
             items = res.json()
         except Exception:
-            print(f"Aviso: Skinport não devolveu JSON válido. A ignorar Skinport...")
+            print("Aviso: Skinport não devolveu JSON válido. A ignorar Skinport...")
             return []
 
         formatted_items = []
