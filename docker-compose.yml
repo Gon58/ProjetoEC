@@ -1,34 +1,24 @@
 services:
-  ec-project-app:
-    build: .
-    container_name: ec-project-app
+  ec-project-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ec-project-backend
     ports:
       - "8080:8080"
-    volumes:
-      - .:/app
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload
     environment:
       - ENV=dev
-
-      # Postgres (SQL)
       - POSTGRES_HOST=ec-project-postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=ec_project
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-
-      # Mongo (NoSQL)
       - MONGO_HOST=ec-project-mongo
       - MONGO_PORT=27017
       - MONGO_DB=ec_project
-
-      # Chroma (Vector DB)
       - CHROMA_HOST=ec-project-chroma
       - CHROMA_PORT=8000
-
-      # Ollama (Embeddings)
       - OLLAMA_HOST=http://ec-project-ollama:11434
-
     depends_on:
       ec-project-postgres:
         condition: service_healthy
@@ -38,6 +28,18 @@ services:
         condition: service_started
       ec-project-ollama:
         condition: service_started
+
+  ec-project-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ec-project-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - ec-project-backend
 
   ec-project-postgres:
     image: postgres:16-alpine
