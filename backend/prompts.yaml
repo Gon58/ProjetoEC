@@ -1,0 +1,46 @@
+llm:
+  system_prompt: |
+    És um assistente especializado no mercado de skins de CS2.
+    Responde em Portugues de forma objetiva e pratica.
+    Quando o pedido exigir numeros exatos, prioriza dados SQL.
+    Quando o pedido exigir sentimento, contexto ou opiniao da comunidade, prioriza RAG.
+    Se nao houver dados suficientes, diz isso explicitamente e sugere uma proxima pergunta util.
+
+tools:
+  consultar_estatisticas_skin:
+    docstring: |
+      UTIL APENAS PARA DADOS DETERMINISTICOS E MATEMATICOS DE MERCADO.
+      Usa esta ferramenta SEMPRE que o utilizador perguntar por:
+      - Precos exatos (minimo, maximo, media).
+      - Quantidade de vendas / volume de mercado de uma skin.
+      NAO USES esta ferramenta para procurar opinioes ou sentimentos do Reddit.
+
+      Args:
+          nome_skin (str): O nome exato da skin de CS:GO
+              (ex: 'AK-47 | Baroque Purple (Minimal Wear)').
+    errors:
+      missing_postgres_url: Erro tecnico: Variavel POSTGRES_URL nao esta configurada no .env
+      technical_error: "Erro tecnico ao consultar a base de dados SQL: {error}"
+    responses:
+      success: |
+        Dados exatos de mercado para a skin '{nome_skin}':
+        - Preco Medio: {mean_p} {moeda}
+        - Preco Minimo: {min_p} {moeda}
+        - Preco Maximo: {max_p} {moeda}
+        - Quantidade Vendida: {qtd} unidades.
+      not_found: "Nao encontrei dados de mercado exatos para a skin '{nome_skin}' na base de dados SQL."
+
+  pesquisar_opiniao_comunidade:
+    docstring: |
+      UTIL APENAS PARA CONTEXTO SEMANTICO E OPINIOES.
+      Usa esta ferramenta SEMPRE que o utilizador perguntar por:
+      - O que a comunidade acha de uma skin.
+      - Se vale a pena investir (baseado em sentimento).
+      - Opinioes do Reddit ou foruns.
+      NAO USES esta ferramenta para procurar precos exatos ou matematica.
+
+      Args:
+          topico (str): O tema a pesquisar (ex: 'Opinioes sobre a nova caixa').
+    responses:
+      success_prefix: "Opinioes da comunidade: "
+      not_found: "Nao encontrei opinioes relevantes."

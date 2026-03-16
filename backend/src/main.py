@@ -1,13 +1,23 @@
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from src.db.connections import check_chromadb, check_mongodb, check_postgres
 from src.db.vectorial import index_document, search_documents
+from src.db.postgres import fetch_skinport_skins, fetch_skinport_skin_by_name
 
 app = FastAPI(title="API Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Modelos Pydantic para requisições de busca vetorial
@@ -106,6 +116,21 @@ def search_documents_endpoint(request: SearchRequest):
         status_code = status.HTTP_400_BAD_REQUEST
     return JSONResponse(content=result, status_code=status_code)
 
+@app.get("/skins")
+def search_skins_endpoint(limit: int = 100):
+    """
+    Endpoint para ir buscar as skins para a web App.
+
+    Vai buscar as skins à base de dados relacional e retorna 100 resultados
+
+    Args:
+        limit: Limite de resultados (padrão: 100).
+
+    Returns:
+        JSON resultados.
+    """
+    result = fetch_skinport_skins(limit=limit)
+    return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
 
 if __name__ == "__main__":
     import uvicorn

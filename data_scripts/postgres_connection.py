@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-from sqlalchemy import Column, Integer, Numeric, String, create_engine
+from sqlalchemy import Column, Integer, Numeric, String, create_engine, text
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from utils import decode_base64, to_decimal_2
 
@@ -27,6 +27,7 @@ class Skin(Base):
     mean_price = Column(Numeric(10, 2))
     median_price = Column(Numeric(10, 2))
     quantity_sold = Column(Integer)
+    source = Column(String)
 
     def __repr__(self) -> str:
         return (
@@ -49,8 +50,11 @@ def create_engine_and_session():
 
 
 def create_tables(engine):
-    """Cria as tabelas."""
+    """Cria as tabelas e garante colunas novas em tabelas já existentes."""
     Base.metadata.create_all(engine)
+    # create_all nao altera tabelas existentes; garante a coluna source em bases antigas.
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE skin ADD COLUMN IF NOT EXISTS source VARCHAR"))
 
 
 def fetch_skinport_data(app_id=730, currency="USD", tradable=True):
@@ -79,6 +83,7 @@ def fetch_skinport_data(app_id=730, currency="USD", tradable=True):
                     "mean_price": item.get("mean_price"),
                     "median_price": item.get("median_price"),
                     "quantity_sold": item.get("quantity"),
+                    "source": "skinport",
                 }
             )
         return formatted_items
@@ -125,6 +130,7 @@ def get_kaggle_processed_data(kaggle_dir):
                         "mean_price": prices.mean(),
                         "median_price": prices.median(),
                         "quantity_sold": int(sells.sum()),
+                        "source": "kaggle",
                     }
                 )
             except Exception:
@@ -150,6 +156,7 @@ def load_from_csv_to_db(csv_path: str, session: Session) -> None:
                 mean_price=to_decimal_2(row["mean_price"]),
                 median_price=to_decimal_2(row["median_price"]),
                 quantity_sold=int(float(row["quantity_sold"])) if row["quantity_sold"] else 0,
+                source=row.get("source"),
             )
             session.add(product)
             count += 1
