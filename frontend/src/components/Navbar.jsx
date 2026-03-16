@@ -22,6 +22,12 @@ export default function Navbar({ currentPage, onNavigate }) {
         >
           Dashboard
         </button>
+        <button
+          className={currentPage === "logs" ? "nav-btn active" : "nav-btn"}
+          onClick={() => onNavigate("logs")}
+        >
+          Logs
+        </button>
       </nav>
     </header>
   );

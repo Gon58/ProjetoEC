@@ -2,6 +2,7 @@ import { useState } from "react";
 import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
+import LogsPage from "./pages/LogsPage";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -10,6 +11,7 @@ export default function App() {
     <MainLayout currentPage={page} onNavigate={setPage}>
       {page === "home" && <HomePage onEnterDashboard={() => setPage("dashboard")} />}
       {page === "dashboard" && <DashboardPage />}
+      {page === "logs" && <LogsPage />}
     </MainLayout>
   );
 }
