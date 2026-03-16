@@ -56,7 +56,10 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
 
                 template = get_prompt(
                     "tools.consultar_estatisticas_skin.responses.not_found",
-                    "Nao encontrei dados de mercado exatos para a skin '{nome_skin}' na base de dados SQL.",
+                    (
+                        "Nao encontrei dados de mercado exatos para a skin "
+                        "'{nome_skin}' na base de dados SQL."
+                    ),
                 )
                 return template.format(nome_skin=nome_skin)
     except Exception as e:

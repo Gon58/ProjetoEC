@@ -1,12 +1,11 @@
 """Utilities to load centralized prompts from prompts.yaml."""
 
-from functools import lru_cache
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 import yaml
-
 
 DEFAULT_PROMPTS_PATH = Path(__file__).resolve().parents[2] / "prompts.yaml"
 

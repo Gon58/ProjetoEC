@@ -7,8 +7,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from src.db.connections import check_chromadb, check_mongodb, check_postgres
+from src.db.postgres import fetch_skinport_skins
 from src.db.vectorial import index_document, search_documents
-from src.db.postgres import fetch_skinport_skins, fetch_skinport_skin_by_name
 
 app = FastAPI(title="API Backend")
 
