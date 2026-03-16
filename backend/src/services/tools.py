@@ -3,26 +3,21 @@ import os
 import psycopg
 from dotenv import load_dotenv
 
+from src.services.prompts import get_prompt
+
 load_dotenv()
 
 
 def consultar_estatisticas_skin(nome_skin: str) -> str:
-    """
-    ÚTIL APENAS PARA DADOS DETERMINÍSTICOS E MATEMÁTICOS DE MERCADO.
-    Usa esta ferramenta SEMPRE que o utilizador perguntar por:
-    - Preços exatos (mínimo, máximo, média).
-    - Quantidade de vendas / volume de mercado de uma skin.
-    NÃO USES esta ferramenta para procurar opiniões ou sentimentos do Reddit.
-
-    Args:
-        nome_skin (str): O nome exato da skin de CS:GO 
-            (ex: 'AK-47 | Baroque Purple (Minimal Wear)').
-    """
+    """Consulta estatisticas exatas de mercado de uma skin no PostgreSQL."""
 
     postgres_url = os.getenv("POSTGRES_URL")
 
     if not postgres_url:
-        return "Erro técnico: Variável POSTGRES_URL não está configurada no .env"
+        return get_prompt(
+            "tools.consultar_estatisticas_skin.errors.missing_postgres_url",
+            "Erro tecnico: Variavel POSTGRES_URL nao esta configurada no .env",
+        )
 
     postgres_url_limpo = postgres_url.replace("postgresql+psycopg://", "postgresql://")
 
@@ -40,35 +35,44 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
 
                 if resultado:
                     min_p, max_p, mean_p, qtd, moeda = resultado
-                    return (
-                        f"Dados exatos de mercado para a skin '{nome_skin}':\n"
-                        f"- Preço Médio: {mean_p} {moeda}\n"
-                        f"- Preço Mínimo: {min_p} {moeda}\n"
-                        f"- Preço Máximo: {max_p} {moeda}\n"
-                        f"- Quantidade Vendida: {qtd} unidades."
+                    template = get_prompt(
+                        "tools.consultar_estatisticas_skin.responses.success",
+                        (
+                            "Dados exatos de mercado para a skin '{nome_skin}':\n"
+                            "- Preco Medio: {mean_p} {moeda}\n"
+                            "- Preco Minimo: {min_p} {moeda}\n"
+                            "- Preco Maximo: {max_p} {moeda}\n"
+                            "- Quantidade Vendida: {qtd} unidades."
+                        ),
+                    )
+                    return template.format(
+                        nome_skin=nome_skin,
+                        mean_p=mean_p,
+                        min_p=min_p,
+                        max_p=max_p,
+                        qtd=qtd,
+                        moeda=moeda,
                     )
 
-                return (
-                    f"Não encontrei dados de mercado exatos para a skin "
-                    f"'{nome_skin}' na base de dados SQL."
+                template = get_prompt(
+                    "tools.consultar_estatisticas_skin.responses.not_found",
+                    (
+                        "Nao encontrei dados de mercado exatos para a skin "
+                        "'{nome_skin}' na base de dados SQL."
+                    ),
                 )
+                return template.format(nome_skin=nome_skin)
     except Exception as e:
-        return f"Erro técnico ao consultar a base de dados SQL: {e}"
+        template = get_prompt(
+            "tools.consultar_estatisticas_skin.errors.technical_error",
+            "Erro tecnico ao consultar a base de dados SQL: {error}",
+        )
+        return template.format(error=e)
 
 
 # FERRAMENTA 2: A ponte para o RAG (Textos e Opiniões)
 def pesquisar_opiniao_comunidade(topico: str) -> str:
-    """
-    ÚTIL APENAS PARA CONTEXTO SEMÂNTICO E OPINIÕES.
-    Usa esta ferramenta SEMPRE que o utilizador perguntar por:
-    - O que a comunidade acha de uma skin.
-    - Se vale a pena investir (baseado em sentimento).
-    - Opiniões do Reddit ou fóruns.
-    NÃO USES esta ferramenta para procurar preços exatos ou matemática.
-
-    Args:
-        topico (str): O tema a pesquisar (ex: 'Opiniões sobre a nova caixa').
-    """
+    """Pesquisa opiniao e contexto semantico da comunidade via busca vetorial."""
     # Função que chama a busca vetorial no ChromaDB para obter
     # opiniões relevantes do Reddit ou fóruns.
     from src.db.vectorial import search_documents
@@ -77,6 +81,24 @@ def pesquisar_opiniao_comunidade(topico: str) -> str:
     if resultado["status"] == "success":
         # Junta todos os textos encontrados para o LLM ler
         textos = [res["text"] for res in resultado["results"]]
-        return "Opiniões da comunidade: " + " | ".join(textos)
+        prefix = get_prompt(
+            "tools.pesquisar_opiniao_comunidade.responses.success_prefix",
+            "Opinioes da comunidade: ",
+        )
+        return prefix + " | ".join(textos)
 
-    return "Não encontrei opiniões relevantes."
+    return get_prompt(
+        "tools.pesquisar_opiniao_comunidade.responses.not_found",
+        "Nao encontrei opinioes relevantes.",
+    )
+
+
+consultar_estatisticas_skin.__doc__ = get_prompt(
+    "tools.consultar_estatisticas_skin.docstring",
+    consultar_estatisticas_skin.__doc__ or "",
+)
+
+pesquisar_opiniao_comunidade.__doc__ = get_prompt(
+    "tools.pesquisar_opiniao_comunidade.docstring",
+    pesquisar_opiniao_comunidade.__doc__ or "",
+)
