@@ -28,6 +28,12 @@ export default function Navbar({ currentPage, onNavigate }) {
         >
           Logs
         </button>
+        <button
+          className={currentPage === "chat" ? "nav-btn active" : "nav-btn"}
+          onClick={() => onNavigate("chat")}
+        >
+          Chatbot
+        </button>
       </nav>
     </header>
   );

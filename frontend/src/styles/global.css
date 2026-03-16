@@ -246,6 +246,78 @@ button {
   color: #e5e7eb;
 }
 
+.chat-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-shell {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.message {
+  max-width: 86%;
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid #1f2937;
+}
+
+.message.user {
+  align-self: flex-end;
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: white;
+}
+
+.message.assistant {
+  align-self: flex-start;
+  background: #1f2937;
+}
+
+.message-author {
+  font-size: 0.72rem;
+  margin-bottom: 3px;
+  color: #94a3b8;
+}
+
+.message-text {
+  line-height: 1.4;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-row input {
+  flex: 1;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  color: #e2e8f0;
+  padding: 10px 12px;
+}
+
+.chat-input-row input:focus {
+  outline: 2px solid #2563eb;
+}
+
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
