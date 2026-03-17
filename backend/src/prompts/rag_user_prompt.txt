@@ -1,0 +1,11 @@
+User question:
+{query}
+
+Retrieved context (each block includes semantic distance; lower means better match):
+{context}
+
+Task:
+- Answer using only the context above. (The person who you're replying to cannot see the retrieved content, it's chunks or distances)
+- Summarize the main findings.
+- If the reviews contain conflicting signals, mention them clearly.
+- If context is not enough, say that explicitly.
