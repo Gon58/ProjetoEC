@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
 import LogsPage from "./pages/LogsPage";
 import ChatPage from "./pages/ChatPage";
+import InvestmentHistoryPage from "./pages/InvestmentHistoryPage";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -12,6 +13,7 @@ export default function App() {
     <MainLayout currentPage={page} onNavigate={setPage}>
       {page === "home" && <HomePage onEnterDashboard={() => setPage("dashboard")} />}
       {page === "dashboard" && <DashboardPage />}
+      {page === "history" && <InvestmentHistoryPage />}
       {page === "logs" && <LogsPage />}
       {page === "chat" && <ChatPage />}
     </MainLayout>
