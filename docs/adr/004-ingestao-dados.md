@@ -6,21 +6,72 @@
 
 **Responsável/Autores:** André Carvalho, João Costa
 
+---
+
 ## 1. Contexto e Problema
 
-O nosso projeto foca-se na economia de *skins* de CS:GO. O mercado é altamente volátil e ocorrem milhares de transações por hora. Surgiu a dúvida na equipa sobre a frequência ideal para extrair dados das APIs (ex: Skinport, Reddit): "Devemos fazer extrações em tempo real (a cada transação/nova *listing*) ou de forma periódica?"
+O projeto foca-se na economia de *skins* de CS:GO, um mercado altamente volátil com milhares de transações por hora.
+
+É necessário definir uma estratégia de ingestão de dados que permita:
+- Cumprir o requisito de >100k registos;
+- Garantir dados suficientemente atualizados para análise;
+- Integrar com o pipeline ETL;
+- Minimizar complexidade de implementação (MVP).
+
+A dúvida principal é se devemos optar por ingestão em tempo real ou em batch.
+
+---
 
 ## 2. Opções Consideradas
 
-* **Opção 1:** Extração em Tempo Real (*Streaming* / *Websockets*).
-* **Opção 2:** *Pull* diário em *batch* (fora de horas de ponta) complementado por um *dataset* histórico estático.
-* **Opção 3:** *Pull* manual apenas quando o sistema é iniciado.
+* **Opção 1:** Extração em Tempo Real (*Streaming* / *Websockets*)
+* **Opção 2:** *Pull* periódico em *batch* (com dataset histórico)
+* **Opção 3:** *Pull* manual apenas no arranque do sistema
+
+---
 
 ## 3. Decisão
 
-Opção 2: *Pull* diário em *batch*.
+**Opção 2: Pull diário em batch, complementado com dataset histórico**
+
+---
 
 ## 4. Justificação
 
-A adoção de uma estratégia MVP (Minimum Viable Product) é altamente recomendada devido ao tempo limitado de 15 semanas. Tentar implementar um sistema de tempo real adicionaria uma complexidade enorme de infraestrutura e aumentaria drasticamente o risco de *rate limits* (bloqueios de IP) nas APIs gratuitas que vamos utilizar.
-O *dataset* histórico do Kaggle garante o cumprimento imediato do requisito de >100k registos, enquanto o *pull* diário garante que o sistema de suporte à decisão tem dados atualizados suficientes para comparar tendências de curto prazo sem comprometer a estabilidade do *pipeline* até à semana 8.
+A escolha de uma estratégia *batch* está alinhada com a abordagem MVP recomendada para o projeto.
+
+### Vantagens:
+- Permite atingir rapidamente o requisito de >100k registos (via dataset histórico);
+- Reduz significativamente a complexidade de implementação;
+- Evita problemas de *rate limiting* nas APIs;
+- Facilita integração com pipeline ETL (processamento periódico);
+- Garante dados suficientemente atualizados para análise de tendências.
+
+### Frequência definida:
+- **Execução diária (1x/dia, durante madrugada — ex: 03:00)**
+- Minimiza impacto de carga e permite processamento offline
+
+### Comparação com alternativas:
+- **Tempo real**: Maior complexidade (infraestrutura, sincronização, escalabilidade), desnecessário para MVP;
+- **Manual**: Não garante atualização contínua nem consistência dos dados.
+
+---
+
+## 5. Consequências
+
+### Positivas
+- Implementação simples e robusta;
+- Cumprimento rápido dos requisitos de dados;
+- Integração direta com pipeline ETL;
+- Redução de risco técnico;
+- Alinhamento com WBS (Semana 3 – Ingestão de Dados).
+
+### Negativas
+- Dados não estão em tempo real;
+- Possível atraso na deteção de eventos recentes;
+- Menor granularidade temporal.
+
+### Mitigações
+- Ajustar frequência para intervalos menores (ex: 6h ou 1h) se necessário;
+- Complementar com análise histórica (menos dependente de tempo real);
+- Evoluir para ingestão híbrida (batch + near real-time) numa fase futura.

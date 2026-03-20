@@ -6,9 +6,24 @@
 
 **Responsável/Autores:** Luís Figueiredo
 
+---
+
 ## 1. Contexto e Problema
 
-Para o desenvolvimento da API Backend, é necessário escolher um framework que permita uma implementação eficiente, escalável e de fácil manutenção. O framework deve ser compatível com as tecnologias utilizadas no projeto e deve oferecer suporte para as funcionalidades necessárias, como autenticação, roteamento, e integração com a base de dados.
+Para o desenvolvimento da API Backend, é necessário escolher um framework que permita uma implementação eficiente, escalável e de fácil manutenção.
+
+A API será responsável por:
+- Expor endpoints para o sistema (chat, RAG, queries SQL);
+- Orquestrar chamadas ao LLM e bases de dados (SQL, NoSQL, Vector DB);
+- Integrar com o frontend (dashboard e chat).
+
+O framework deve suportar:
+- Operações assíncronas;
+- Integração com Docker;
+- Facilidade de testes e CI;
+- Boa performance para múltiplas chamadas concorrentes.
+
+---
 
 ## 2. Opções Consideradas
 
@@ -16,10 +31,50 @@ Para o desenvolvimento da API Backend, é necessário escolher um framework que 
 * Opção 2 - Django
 * Opção 3 - FastAPI
 
+---
+
 ## 3. Decisão
 
-FastAPI
+**FastAPI**
+
+---
 
 ## 4. Justificação
 
-O FastAPI foi selecionado pela sua alta performance e suporte nativo a operações assíncronas (async/await), o que será crítico na Fase 2 quando a API tiver de aguardar pelas respostas do modelo de linguagem (LLM) ou fazer queries simultâneas ao Postgres e MongoDB. Adicionalmente, gera documentação Swagger interativa de forma automática e é facilmente configurável no `docker-compose.yml` utilizando o servidor Uvicorn.
+O FastAPI foi escolhido por oferecer o melhor equilíbrio entre performance, simplicidade e suporte a funcionalidades modernas.
+
+### Vantagens:
+- Suporte nativo a async/await (crítico para chamadas ao LLM e múltiplas bases de dados);
+- Alta performance comparável a frameworks mais complexos;
+- Geração automática de documentação (Swagger/OpenAPI);
+- Fácil integração com Docker (Uvicorn + containers);
+- Boa integração com pipelines de CI (testes e validação automática);
+- Simplicidade de desenvolvimento (menor overhead que Django).
+
+### Comparação com alternativas:
+- **Flask**: Mais simples, mas sem suporte nativo robusto a async e menos estruturado para projetos maiores;
+- **Django**: Muito completo, mas excessivo para o contexto do projeto (overhead desnecessário para MVP).
+
+A escolha de FastAPI permite desenvolver uma API moderna, eficiente e alinhada com os requisitos do sistema.
+
+---
+
+## 5. Consequências
+
+### Positivas
+- Melhor performance e escalabilidade;
+- Suporte eficiente a operações concorrentes;
+- Integração direta com Docker;
+- Facilidade de integração com CI/CD;
+- Documentação automática da API.
+
+### Negativas
+- Curva de aprendizagem inicial (async/await);
+- Necessidade de gerir corretamente concorrência;
+- Menor maturidade comparado com Django em alguns cenários.
+
+### Mitigações
+- Uso de boas práticas async;
+- Testes automatizados no pipeline CI;
+- Limitar complexidade da API no MVP;
+- Evoluir arquitetura conforme necessário.
