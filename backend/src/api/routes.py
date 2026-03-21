@@ -4,11 +4,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 
 from fastapi import APIRouter, status
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from ..db.connections import check_chromadb, check_mongodb, check_postgres
-from ..db.postgres import fetch_skinport_skins
 from ..db.vectorial import index_document, search_documents
 from ..schemas.requests import DocumentIndexRequest, SearchRequest
 
@@ -18,11 +16,11 @@ router = APIRouter()
 @router.get("/health")
 def health_check() -> JSONResponse:
     """
-    Health check endpoint que verifica:
-    - Status da API
-    - Conexão com PostgreSQL
-    - Conexão com MongoDB
-    - Conexão com ChromaDB
+    Health check endpoint that verifies:
+    - API status
+    - Connection to PostgreSQL
+    - Connection to MongoDB
+    - Connection to ChromaDB
     """
     checks: Dict[str, Dict[str, Any]] = {
         "postgres": check_postgres(),
@@ -30,7 +28,7 @@ def health_check() -> JSONResponse:
         "chromadb": check_chromadb(),
     }
 
-    # Determina se todos os serviços estão UP
+    # Determine if all services are UP
     all_healthy = all(check["status"] == "up" for check in checks.values())
 
     response_data = {
@@ -47,16 +45,16 @@ def health_check() -> JSONResponse:
 @router.post("/index")
 def index_document_endpoint(request: DocumentIndexRequest) -> JSONResponse:
     """
-    Endpoint para indexar um documento no ChromaDB.
+    Endpoint to index a document in ChromaDB.
 
-    Divide o documento em chunks, gera embeddings via Ollama,
-    e armazena no ChromaDB para busca vetorial posterior.
+    Splits the document into chunks, generates embeddings via Ollama,
+    and stores in ChromaDB for later vector search.
 
     Args:
-        request: Objeto com doc_id, text, e metadados opcionais.
+        request: Object with doc_id, text, and optional metadata.
 
     Returns:
-        JSON com status, doc_id, e número de chunks indexados.
+        JSON with status, doc_id, and number of indexed chunks.
     """
     result = index_document(
         doc_id=request.doc_id,
@@ -75,16 +73,16 @@ def index_document_endpoint(request: DocumentIndexRequest) -> JSONResponse:
 @router.post("/search")
 def search_documents_endpoint(request: SearchRequest) -> JSONResponse:
     """
-    Endpoint para pesquisa vetorial semântica no ChromaDB.
+    Endpoint for semantic vector search in ChromaDB.
 
-    Gera embedding para a query e retorna documentos similares
-    ordenados por relevância (distância).
+    Generates embedding for the query and returns similar documents
+    ordered by relevance (distance).
 
     Args:
-        request: Objeto com query e n_results (padrão: 5).
+        request: Object with query and n_results (default: 5).
 
     Returns:
-        JSON com query, resultados e número total de matches.
+        JSON with query, results, and total number of matches.
     """
     result = search_documents(
         query=request.query,
