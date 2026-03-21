@@ -1,16 +1,26 @@
-ruff
-pytest
+# Core dependencies
+python-dotenv
 requests
 pandas
-python-dotenv
 
+# Database & ORM
+SQLAlchemy>=2.0.0
+psycopg[binary]
+psycopg2-binary
+pymongo
+
+# Vector & AI
+chromadb
+ollama
+
+# API Framework
 fastapi
 uvicorn[standard]
 httpx
 
-psycopg[binary]
-pymongo
-chromadb
-ollama
-SQLAlchemy>=2.0.0
+# Data Serialization
 PyYAML
+
+# Development & Testing
+ruff
+pytest

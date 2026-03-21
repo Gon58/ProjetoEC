@@ -1,5 +1,0 @@
--e .
-pytest
-ruff
-python-dotenv
-psycopg2-binary
