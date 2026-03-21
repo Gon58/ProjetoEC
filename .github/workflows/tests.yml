@@ -1,0 +1,27 @@
+name: Run Tests (Docker)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and run tests
+        run: |
+          docker compose up -d ec-project-postgres ec-project-mongo ec-project-chroma
+          
+          echo "Waiting for Postgres..."
+          sleep 10
+
+          docker compose build ec-project-tests
+          docker compose run --rm ec-project-tests
