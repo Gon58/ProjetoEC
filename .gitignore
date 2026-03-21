@@ -1,4 +1,10 @@
 .env
 data_scripts/kaggle_dataset/
-pycache__
+__pycache__/
+**/__pycache__/
 .DS_Store
+
+data_pipeline/.pytest_cache
+data_pipeline/__pycache__
+data_pipeline/tests/__pycache__
+data_pipeline/data/raw/
