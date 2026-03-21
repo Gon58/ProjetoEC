@@ -1,18 +1,18 @@
 """
-Smoke test de integração.
+Smoke test for integration.
 
-Objetivo:
-- Validar que o container da aplicação consegue ligar e executar operações mínimas
-  nos 3 tipos de persistência do projeto:
+Objective:
+- Validate that the application container can connect and perform minimal operations
+  on the 3 types of persistence in the project:
   1) SQL: PostgreSQL
   2) NoSQL: MongoDB
-  3) Vetorial: ChromaDB
+  3) Vectorial: ChromaDB
 
-Como executar (dentro do container da app):
-    python tests/scripts/smoke_test_dbs.py
+How to execute (inside the app container):
+    python scripts/smoke_test_dbs.py
 
-Este script faz operações reais (read/write/query) para garantir que os serviços
-estão operacionais e que a comunicação entre containers está correta.
+This script performs real operations (read/write/query) to ensure that the services
+are operational and that communication between containers is correct.
 """
 
 import os
@@ -26,29 +26,29 @@ from pymongo import MongoClient
 
 def env(name: str, default: str) -> str:
     """
-    Lê uma variável de ambiente com fallback.
+    Reads an environment variable with fallback.
 
     Args:
-        name: Nome da variável de ambiente.
-        default: Valor por omissão caso a variável não exista.
+        name: Name of the environment variable.
+        default: Default value if the variable does not exist.
 
     Returns:
-        O valor da variável de ambiente se existir; caso contrário, `default`.
+        The value of the environment variable if it exists; otherwise, `default`.
     """
     return os.getenv(name, default)
 
 
 def test_postgres() -> None:
     """
-    Testa conectividade e execução básica no PostgreSQL.
+    Tests connectivity and basic execution in PostgreSQL.
 
-    Operações:
-    - Conecta ao PostgreSQL usando parâmetros vindos do docker-compose (.env vars).
-    - Executa `SELECT 1` para validar conexão e capacidade de correr queries.
+    Operations:
+    - Connects to PostgreSQL using parameters from docker-compose (.env vars).
+    - Executes `SELECT 1` to validate connection and query execution capability.
 
     Raises:
-        AssertionError: Se o resultado da query não for o esperado.
-        psycopg.Error: Se houver erro de conexão/autenticação/rede.
+        AssertionError: If the query result is not as expected.
+        psycopg.Error: If there is a connection/authentication/network error.
     """
     host = env("POSTGRES_HOST", "ec-project-postgres")
     port = int(env("POSTGRES_PORT", "5432"))
@@ -68,16 +68,16 @@ def test_postgres() -> None:
 
 def test_mongo() -> None:
     """
-    Testa conectividade e read/write básico no MongoDB.
+    Tests connectivity and basic read/write in MongoDB.
 
-    Operações:
-    - Cria cliente MongoDB e faz `ping` ao servidor.
-    - Faz upsert de 1 documento na collection `smoke_test`.
-    - Lê o documento e valida conteúdo.
+    Operations:
+    - Creates MongoDB client and pings the server.
+    - Upserts 1 document in the `smoke_test` collection.
+    - Reads the document and validates content.
 
     Raises:
-        AssertionError: Se o documento não for lido ou tiver valores inesperados.
-        pymongo.errors.PyMongoError: Se houver erro de conexão/rede/servidor.
+        AssertionError: If the document is not read or has unexpected values.
+        pymongo.errors.PyMongoError: If there is a connection/network/server error.
     """
     host = env("MONGO_HOST", "ec-project-mongo")
     port = int(env("MONGO_PORT", "27017"))
@@ -101,20 +101,20 @@ def test_mongo() -> None:
 
 def test_chroma() -> None:
     """
-    Testa conectividade e operação básica no Chroma (Vector DB) via HTTP.
+    Tests connectivity and basic operation in Chroma (Vector DB) via HTTP.
 
-    Operações:
-    - Conecta ao servidor Chroma.
-    - Cria/obtém a collection `smoke_test`.
-    - Faz upsert de 1 documento com embedding "dummy".
-    - Faz query com o mesmo embedding e valida que devolve o id esperado.
+    Operations:
+    - Connects to the Chroma server.
+    - Creates/gets the `smoke_test` collection.
+    - Upserts 1 document with a "dummy" embedding.
+    - Queries with the same embedding and validates that it returns the expected id.
 
-    Nota:
-        O embedding usado é pequeno e artificial, só para validar o pipeline.
+    Note:
+        The embedding used is small and artificial, only to validate the pipeline.
 
     Raises:
-        AssertionError: Se o resultado da query não devolver o id esperado.
-        Exception: Se houver erro de conexão ao servidor Chroma.
+        AssertionError: If the query result does not return the expected id.
+        Exception: If there is a connection error to the Chroma server.
     """
     host = env("CHROMA_HOST", "ec-project-chroma")
     port = int(env("CHROMA_PORT", "8000"))
@@ -125,7 +125,7 @@ def test_chroma() -> None:
     # collection
     col = client.get_or_create_collection(name="smoke_test")
 
-    # add 1 embedding "dummy"
+    # add 1 "dummy" embedding
     col.upsert(
         ids=["doc1"],
         documents=["hello world"],
@@ -146,7 +146,7 @@ def main() -> None:
     test_postgres()
     test_mongo()
     test_chroma()
-    print("\nSmoke test OK: app liga a Postgres + Mongo + Chroma")
+    print("\nSmoke test OK: app connects to Postgres + Mongo + Chroma")
 
 
 if __name__ == "__main__":

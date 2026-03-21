@@ -1,9 +1,8 @@
-import os
-
 import psycopg
 from dotenv import load_dotenv
 
-from src.services.prompts import get_prompt
+from ..core.config import POSTGRES_URL
+from ..core.prompts import get_prompt
 
 load_dotenv()
 
@@ -11,15 +10,13 @@ load_dotenv()
 def consultar_estatisticas_skin(nome_skin: str) -> str:
     """Consulta estatisticas exatas de mercado de uma skin no PostgreSQL."""
 
-    postgres_url = os.getenv("POSTGRES_URL")
-
-    if not postgres_url:
+    if not POSTGRES_URL:
         return get_prompt(
             "tools.consultar_estatisticas_skin.errors.missing_postgres_url",
             "Erro tecnico: Variavel POSTGRES_URL nao esta configurada no .env",
         )
 
-    postgres_url_limpo = postgres_url.replace("postgresql+psycopg://", "postgresql://")
+    postgres_url_limpo = POSTGRES_URL.replace("postgresql+psycopg://", "postgresql://")
 
     try:
         with psycopg.connect(postgres_url_limpo) as conn:

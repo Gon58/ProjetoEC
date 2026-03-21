@@ -1,19 +1,18 @@
 """Utilities to load centralized prompts from prompts.yaml."""
 
-import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-DEFAULT_PROMPTS_PATH = Path(__file__).resolve().parents[2] / "prompts.yaml"
+from .config import PROMPTS_FILE
 
 
 @lru_cache(maxsize=1)
 def load_prompts() -> dict[str, Any]:
     """Loads and caches prompts from YAML, returning an empty dict on failure."""
-    prompts_path = Path(os.getenv("PROMPTS_FILE", str(DEFAULT_PROMPTS_PATH)))
+    prompts_path = Path(PROMPTS_FILE)
 
     try:
         with prompts_path.open("r", encoding="utf-8") as file:

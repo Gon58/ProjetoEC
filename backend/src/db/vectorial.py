@@ -1,14 +1,14 @@
 """
-Operações de busca vetorial usando ChromaDB e Ollama embeddings.
+Vector search operations using ChromaDB and Ollama embeddings.
 
-Fornece funções para indexar documentos e realizar buscas semânticas
-utilizando embeddings gerados via Ollama (embeddinggemma).
+Provides functions to index documents and perform semantic searches
+using embeddings generated via Ollama (embeddinggemma).
 """
 
 from typing import Any, Dict
 
-from src.db.connections import get_chroma_client
-from src.services.embeddings import embed_text, embed_texts
+from ..services.embeddings import embed_text, embed_texts
+from .connections import get_chroma_client
 
 
 def index_document(
@@ -20,30 +20,30 @@ def index_document(
     overlap: int = 100,
 ) -> Dict[str, Any]:
     """
-    Indexa um documento no ChromaDB com embeddings gerados via Ollama (embeddinggemma).
+    Indexes a document in ChromaDB with embeddings generated via Ollama (embeddinggemma).
 
-    Divide o documento em chunks sobrepostos, gera embeddings para cada chunk,
-    e armazena no ChromaDB.
+    Splits the document into overlapping chunks, generates embeddings for each chunk,
+    and stores them in ChromaDB.
 
     Args:
-        doc_id: Identificador único do documento.
-        text: Conteúdo do documento a indexar.
-        collection_name: Nome da coleção no ChromaDB.
-        metadata: Metadados adicionais sobre o documento.
-        chunk_size: Tamanho de cada chunk em caracteres.
-        overlap: Sobreposição entre chunks para manter contexto.
+        doc_id: Unique identifier for the document.
+        text: Content of the document to index.
+        collection_name: Name of the collection in ChromaDB.
+        metadata: Additional metadata about the document.
+        chunk_size: Size of each chunk in characters.
+        overlap: Overlap between chunks to maintain context.
 
     Returns:
-        Dicionário com resultado da indexação: doc_id, chunks_indexed, status.
+        Dictionary with indexing result: doc_id, chunks_indexed, status.
 
     Raises:
-        Exception: Se a indexação falhar.
+        Exception: If indexing fails.
     """
     try:
         if metadata is None:
             metadata = {}
 
-        # Divide o documento em chunks
+        # Split the document into chunks
         chunks = []
         for i in range(0, len(text), chunk_size - overlap):
             chunks.append(text[i : i + chunk_size])
@@ -51,17 +51,17 @@ def index_document(
         if not chunks:
             return {"status": "error", "message": "No chunks created"}
 
-        # Gera embeddings para os chunks
+        # Generate embeddings for the chunks
         embeddings = embed_texts(chunks)
 
-        # Prepara IDs e metadados dos chunks
+        # Prepare IDs and metadata for chunks
         chunk_ids = [f"{doc_id}_chunk_{i}" for i in range(len(chunks))]
         chunk_metadatas = [
             {**metadata, "doc_id": doc_id, "chunk_index": i}
             for i in range(len(chunks))
         ]
 
-        # Armazena no ChromaDB
+        # Store in ChromaDB
         client = get_chroma_client()
         collection = client.get_or_create_collection(name=collection_name)
         collection.add(
@@ -86,27 +86,27 @@ def search_documents(
     n_results: int = 5,
 ) -> Dict[str, Any]:
     """
-    Pesquisa documentos no ChromaDB usando búsca vetorial semântica.
+    Searches documents in ChromaDB using semantic vector search.
 
-    Gera embedding para a query usando Ollama (embeddinggemma) e procura
-    os documentos mais similares no ChromaDB.
+    Generates embedding for the query using Ollama (embeddinggemma) and finds
+    the most similar documents in ChromaDB.
 
     Args:
-        query: Texto da query para pesquisa semântica.
-        collection_name: Nome da coleção no ChromaDB.
-        n_results: Número de resultados a retornar.
+        query: Text of the query for semantic search.
+        collection_name: Name of the collection in ChromaDB.
+        n_results: Number of results to return.
 
     Returns:
-        Dicionário com resultados da pesquisa: query, results, total_results.
+        Dictionary with search results: query, results, total_results.
 
     Raises:
-        Exception: Se a pesquisa falhar.
+        Exception: If search fails.
     """
     try:
-        # Gera embedding para a query
+        # Generate embedding for the query
         query_embedding = embed_text(query)
 
-        # Pesquisa no ChromaDB
+        # Search in ChromaDB
         client = get_chroma_client()
         collection = client.get_or_create_collection(name=collection_name)
         results = collection.query(
@@ -114,7 +114,7 @@ def search_documents(
             n_results=n_results,
         )
 
-        # Formata resultados
+        # Format results
         formatted_results = []
         if results["ids"] and len(results["ids"]) > 0:
             for idx, (chunk_id, distance) in enumerate(
