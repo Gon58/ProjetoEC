@@ -1,9 +1,18 @@
-import ollama
+import json
+import logging
+from typing import Any
 
 from .embeddings import ensure_model, get_ollama_client 
 from .tools import consultar_estatisticas_skin, pesquisar_opiniao_comunidade
 from ..core.config import LLM_MODEL
 from ..core.prompts import get_prompt
+
+
+logger = logging.getLogger(__name__)
+
+
+def _log_event(event: str, payload: dict[str, Any]) -> None:
+    logger.info(json.dumps({"event": event, **payload}, ensure_ascii=False, default=str))
 
 def load_system_prompt() -> str:
     return get_prompt("llm.system_prompt", "")
@@ -14,6 +23,7 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
     """
 
     print(f"A verificar/instalar o modelo {LLM_MODEL} no Docker...")
+    _log_event("agent_input", {"message": mensagem_utilizador, "model": LLM_MODEL})
     ensure_model(LLM_MODEL)
     
     client = get_ollama_client()
@@ -47,10 +57,22 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
             argumentos = tool_call["function"]["arguments"]
             
             print(f"[Router] O LLM escolheu a rota: {nome_da_tool}")
+            _log_event(
+                "agent_tool_selected",
+                {"tool": nome_da_tool, "arguments": argumentos, "message": mensagem_utilizador},
+            )
             
             funcao_python = ferramentas_disponiveis.get(nome_da_tool)
             if funcao_python:
                 resultado_bruto = funcao_python(**argumentos)
+                _log_event(
+                    "agent_tool_result",
+                    {
+                        "tool": nome_da_tool,
+                        "result": str(resultado_bruto),
+                        "message": mensagem_utilizador,
+                    },
+                )
                 
                 mensagens.append({
                     "role": "tool",
@@ -63,6 +85,10 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
             model=LLM_MODEL,
             messages=mensagens
         )
-        return resposta_final["message"]["content"]
+        resposta_texto = resposta_final["message"]["content"]
+        _log_event("agent_output", {"message": mensagem_utilizador, "output": resposta_texto})
+        return resposta_texto
         
-    return resposta_llm["message"]["content"]
+    resposta_texto = resposta_llm["message"]["content"]
+    _log_event("agent_output", {"message": mensagem_utilizador, "output": resposta_texto})
+    return resposta_texto

@@ -67,6 +67,47 @@ def test_chat_agent_tool_call_sql(
 @patch("src.services.agent.ensure_model")
 @patch("src.services.agent.get_prompt", return_value="prompt de sistema")
 @patch("src.services.agent.get_ollama_client")
+def test_chat_agent_tool_call_opiniao(
+    mock_get_client,
+    mock_get_prompt,
+    mock_ensure_model,
+    mock_consultar,
+    mock_pesquisar,
+):
+    client = MagicMock()
+    client.chat.side_effect = [
+        {
+            "message": {
+                "content": "",
+                "tool_calls": [
+                    {
+                        "function": {
+                            "name": "pesquisar_opiniao_comunidade",
+                            "arguments": {"topico": "AK-47 | Vulcan"},
+                        }
+                    }
+                ],
+            }
+        },
+        {"message": {"content": "Resposta final com base em opiniao"}},
+    ]
+    mock_get_client.return_value = client
+
+    resposta = chat_nesy_agent("O que a comunidade acha da AK-47 | Vulcan?")
+
+    assert resposta == "Resposta final com base em opiniao"
+    assert client.chat.call_count == 2
+    mock_pesquisar.assert_called_once_with(topico="AK-47 | Vulcan")
+    mock_consultar.assert_not_called()
+    mock_ensure_model.assert_called_once()
+    mock_get_prompt.assert_called_once_with("llm.system_prompt", "")
+
+
+@patch("src.services.agent.pesquisar_opiniao_comunidade", return_value="opiniao ok")
+@patch("src.services.agent.consultar_estatisticas_skin", return_value="stats ok")
+@patch("src.services.agent.ensure_model")
+@patch("src.services.agent.get_prompt", return_value="prompt de sistema")
+@patch("src.services.agent.get_ollama_client")
 def test_chat_agent_tool_calls_analitico(
     mock_get_client,
     mock_get_prompt,

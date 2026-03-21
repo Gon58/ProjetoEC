@@ -4,11 +4,14 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 
 from fastapi import APIRouter, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from ..db.connections import check_chromadb, check_mongodb, check_postgres
+from ..db.postgres import fetch_skinport_skins
 from ..db.vectorial import index_document, search_documents
-from ..schemas.requests import DocumentIndexRequest, SearchRequest
+from ..schemas.requests import ChatRequest, ChatResponse, DocumentIndexRequest, SearchRequest
+from ..services.agent import chat_nesy_agent
 
 router = APIRouter()
 
@@ -94,6 +97,26 @@ def search_documents_endpoint(request: SearchRequest) -> JSONResponse:
     else:
         status_code = status.HTTP_400_BAD_REQUEST
     return JSONResponse(content=result, status_code=status_code)
+
+
+@router.post("/chat", response_model=ChatResponse)
+def chat_endpoint(request: ChatRequest) -> JSONResponse:
+    """Endpoint de chat para o frontend usar o agente NeSy."""
+    try:
+        answer = chat_nesy_agent(request.message)
+        payload = {
+            "status": "success",
+            "message": request.message,
+            "answer": answer,
+        }
+        return JSONResponse(content=payload, status_code=status.HTTP_200_OK)
+    except Exception as e:
+        payload = {
+            "status": "error",
+            "message": request.message,
+            "answer": f"Erro no agente: {e}",
+        }
+        return JSONResponse(content=payload, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.get("/skins")
