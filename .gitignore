@@ -8,3 +8,7 @@ data_pipeline/.pytest_cache
 data_pipeline/__pycache__
 data_pipeline/tests/__pycache__
 data_pipeline/data/raw/
+
+backend.egg-info/
+pytest_cache/
+ruff_cache/
