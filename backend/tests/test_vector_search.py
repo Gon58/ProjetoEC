@@ -1,11 +1,11 @@
 """
-Testes de busca vetorial e indexação usando ChromaDB com Ollama embeddings.
+Tests for vector search and indexing using ChromaDB with Ollama embeddings.
 
-Testa:
-- Indexação de documentos
-- Geração de embeddings
-- Busca vetorial semântica
-- Integração da API
+Tests:
+- Document indexing
+- Embedding generation
+- Semantic vector search
+- API integration
 """
 
 import unittest
@@ -17,15 +17,15 @@ from src.main import app
 
 
 class TestVectorialIndexing(unittest.TestCase):
-    """Testes de indexação de documentos para busca vetorial."""
+    """Tests for document indexing for vector search."""
 
     def setUp(self):
-        """Prepara o cliente de teste da API."""
+        """Sets up the API test client."""
         self.client = TestClient(app)
 
-    @patch('src.main.index_document')
+    @patch('src.api.routes.index_document')
     def test_index_document_success(self, mock_index):
-        """Testa indexação bem-sucedida de um documento."""
+        """Tests successful document indexing."""
         mock_index.return_value = {
             "status": "success",
             "doc_id": "test_doc",
@@ -34,7 +34,7 @@ class TestVectorialIndexing(unittest.TestCase):
 
         payload = {
             "doc_id": "test_doc",
-            "text": "Este é um documento de teste para indexação. " * 10,
+            "text": "This is a test document for indexing. " * 10,
             "metadata": {"source": "test"},
         }
 
@@ -45,9 +45,9 @@ class TestVectorialIndexing(unittest.TestCase):
         self.assertEqual(response.json()["chunks_indexed"], 2)
         mock_index.assert_called_once()
 
-    @patch('src.main.index_document')
+    @patch('src.api.routes.index_document')
     def test_index_document_failure(self, mock_index):
-        """Testa falha na indexação de um documento."""
+        """Tests failure in document indexing."""
         mock_index.return_value = {
             "status": "error",
             "message": "ChromaDB connection failed",
@@ -65,15 +65,15 @@ class TestVectorialIndexing(unittest.TestCase):
 
 
 class TestVectorialSearch(unittest.TestCase):
-    """Testes de busca vetorial semântica."""
+    """Tests for semantic vector search."""
 
     def setUp(self):
-        """Prepara o cliente de teste da API."""
+        """Sets up the API test client."""
         self.client = TestClient(app)
 
-    @patch('src.main.search_documents')
+    @patch('src.api.routes.search_documents')
     def test_search_documents_success(self, mock_search):
-        """Testa busca bem-sucedida de documentos."""
+        """Tests successful document search."""
         mock_search.return_value = {
             "status": "success",
             "query": "machine learning",
@@ -106,15 +106,15 @@ class TestVectorialSearch(unittest.TestCase):
         self.assertEqual(data["status"], "success")
         self.assertEqual(data["total_results"], 2)
         self.assertEqual(len(data["results"]), 2)
-        # Verifica que resultados estão ordenados por distância
+        # Checks that results are ordered by distance
         self.assertLess(
             data["results"][0]["distance"],
             data["results"][1]["distance"]
         )
 
-    @patch('src.main.search_documents')
+    @patch('src.api.routes.search_documents')
     def test_search_documents_no_results(self, mock_search):
-        """Testa busca que não retorna resultados."""
+        """Tests search that returns no results."""
         mock_search.return_value = {
             "status": "success",
             "query": "nonexistent query",
@@ -132,9 +132,9 @@ class TestVectorialSearch(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["total_results"], 0)
 
-    @patch('src.main.search_documents')
+    @patch('src.api.routes.search_documents')
     def test_search_documents_failure(self, mock_search):
-        """Testa falha na busca de documentos."""
+        """Tests failure in document search."""
         mock_search.return_value = {
             "status": "error",
             "message": "ChromaDB connection failed",
@@ -149,7 +149,7 @@ class TestVectorialSearch(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["status"], "error")
 
-    @patch('src.main.search_documents')
+    @patch('src.api.routes.search_documents')
     def test_search_with_custom_n_results(self, mock_search):
         """Testa limitação customizada de resultados."""
         mock_search.return_value = {

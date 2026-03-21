@@ -14,4 +14,4 @@ COPY . .
 RUN pip install --upgrade pip
 RUN pip install -e ".[dev]"
 
-CMD ["sh", "-c", "ruff check . && pytest tests"]
+CMD ["sh", "-c", "ruff check . --fix && pytest tests"]

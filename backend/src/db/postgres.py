@@ -1,23 +1,16 @@
-import os
 from typing import Any
 
-from sqlalchemy import URL, create_engine, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError, ProgrammingError
+
+from ..core.config import POSTGRES_URL
 
 
 def _get_engine():
-    """Cria engine a partir da variável POSTGRES_URL."""
-    postgres_url = os.getenv("POSTGRES_URL")
-    if not postgres_url:
-        postgres_url = URL.create(
-            drivername="postgresql+psycopg",
-            username=os.getenv("POSTGRES_USER", "ec_project"),
-            password=os.getenv("POSTGRES_PASSWORD", ""),
-            host=os.getenv("POSTGRES_HOST", "localhost"),
-            port=int(os.getenv("POSTGRES_PORT", "5432")),
-            database=os.getenv("POSTGRES_DB", "ec_project"),
-        )
-    return create_engine(postgres_url, echo=False)
+    """Creates engine from POSTGRES_URL."""
+    if not POSTGRES_URL:
+        raise ValueError("POSTGRES_URL is not configured")
+    return create_engine(POSTGRES_URL, echo=False)
 
 
 def fetch_skinport_skins(limit: int = 100) -> list[dict[str, Any]]:

@@ -8,17 +8,14 @@ services:
       - "8080:8080"
     environment:
       - ENV=dev
-      - POSTGRES_HOST=ec-project-postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=ec_project
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_URL=postgresql+psycopg://${DB_USER}:${DB_PASSWORD}@ec-project-postgres:5432/ec_project
       - MONGO_HOST=ec-project-mongo
       - MONGO_PORT=27017
       - MONGO_DB=ec_project
       - CHROMA_HOST=ec-project-chroma
       - CHROMA_PORT=8000
-      - OLLAMA_HOST=http://ec-project-ollama:11434
+      - OLLAMA_BASE_URL=http://ec-project-ollama:11434
+      - EMBEDDING_MODEL=nomic-embed-text
     depends_on:
       ec-project-postgres:
         condition: service_healthy
@@ -53,7 +50,7 @@ services:
     volumes:
       - ec_project_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ec_project -d ec_project"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ec_project"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -83,7 +80,7 @@ services:
       - ec_project_ollamadata:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0:11434
-  
+
   ec-project-tests:
     build:
       context: ./data_pipeline
@@ -97,12 +94,37 @@ services:
       ec-project-chroma:
         condition: service_started
     environment:
-      - POSTGRES_URL=postgresql://ec_project:ec_project_pass@ec-project-postgres:5432/ec_project
+      - POSTGRES_URL=postgresql://${DB_USER}:${DB_PASSWORD}@ec-project-postgres:5432/ec_project
       - MONGO_HOST=ec-project-mongo
       - MONGO_PORT=27017
       - MONGO_DB=ec_project
       - CHROMA_HOST=ec-project-chroma
       - CHROMA_PORT=8000
+
+  ec-project-backend-tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    container_name: ec-project-backend-tests
+    depends_on:
+      ec-project-postgres:
+        condition: service_healthy
+      ec-project-mongo:
+        condition: service_started
+      ec-project-chroma:
+        condition: service_started
+      ec-project-ollama:
+        condition: service_started
+    environment:
+      - POSTGRES_URL=postgresql+psycopg://${DB_USER}:${DB_PASSWORD}@ec-project-postgres:5432/ec_project
+      - MONGO_HOST=ec-project-mongo
+      - MONGO_PORT=27017
+      - MONGO_DB=ec_project
+      - CHROMA_HOST=ec-project-chroma
+      - CHROMA_PORT=8000
+      - OLLAMA_BASE_URL=http://ec-project-ollama:11434
+      - EMBEDDING_MODEL=nomic-embed-text
+    tty: true
 
 volumes:
   ec_project_pgdata:
