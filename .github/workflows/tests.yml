@@ -18,10 +18,10 @@ jobs:
       
       - name: Create mock .env file
         run: |
-          echo "DB_USER=test_user" >> .env
-          echo "DB_PASSWORD=test_pass" >> .env
+          echo "DB_USER=ec_project" >> .env
+          echo "DB_PASSWORD=ec_project_pass" >> .env
           echo "DB_NAME=ec_project" >> .env
-          echo "POSTGRES_URL=postgresql://test_user:test_pass@ec-project-postgres:5432/ec_project" >> .env
+          echo "POSTGRES_URL=postgresql://ec_project:ec_project_pass@ec-project-postgres:5432/ec_project" >> .env
           echo "MONGO_HOST=ec-project-mongo" >> .env
           echo "MONGO_PORT=27017" >> .env
           echo "MONGO_DB=ec_project" >> .env
