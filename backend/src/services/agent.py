@@ -2,11 +2,10 @@ import json
 import logging
 from typing import Any
 
-from .embeddings import ensure_model, get_ollama_client 
-from .tools import consultar_estatisticas_skin, pesquisar_opiniao_comunidade
 from ..core.config import LLM_MODEL
 from ..core.prompts import get_prompt
-
+from .embeddings import ensure_model, get_ollama_client
+from .tools import consultar_estatisticas_skin, pesquisar_opiniao_comunidade
 
 logger = logging.getLogger(__name__)
 
