@@ -4,9 +4,11 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 
 from fastapi import APIRouter, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from ..db.connections import check_chromadb, check_mongodb, check_postgres
+from ..db.postgres import fetch_skinport_skins
 from ..db.vectorial import index_document, search_documents
 from ..schemas.requests import DocumentIndexRequest, SearchRequest
 
