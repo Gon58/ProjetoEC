@@ -1,7 +1,6 @@
 from typing import Any
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from ..core.config import POSTGRES_URL
 

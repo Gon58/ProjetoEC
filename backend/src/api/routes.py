@@ -8,7 +8,12 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from ..db.connections import check_chromadb, check_mongodb, check_postgres
-from ..db.postgres import fetch_skinport_skins, fetch_skinport_skin_by_id, fetch_best_selling_skinport_skins, fetch_most_expensive_skinport_skins
+from ..db.postgres import (
+    fetch_best_selling_skinport_skins,
+    fetch_most_expensive_skinport_skins,
+    fetch_skinport_skin_by_id,
+    fetch_skinport_skins,
+)
 from ..db.vectorial import index_document, search_documents
 from ..schemas.requests import DocumentIndexRequest, SearchRequest
 
