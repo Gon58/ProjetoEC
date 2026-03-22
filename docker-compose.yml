@@ -1,8 +1,8 @@
 services:
   ec-project-backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: ec-project-backend
     ports:
       - "8080:8080"
@@ -86,8 +86,8 @@ services:
   
   ec-project-tests:
     build:
-      context: ./data_pipeline
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: data_pipeline/Dockerfile
     container_name: ec-project-tests
     depends_on:
       ec-project-postgres:
