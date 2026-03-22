@@ -1,5 +1,5 @@
 """Steam authentication and game endpoints."""
-from fastapi import APIRouter, Request, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from ..schemas.steam import SteamMeResponse
