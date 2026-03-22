@@ -1,29 +1,42 @@
 import { useState } from "react";
+import { chatWithAgent } from "../services/api";
 
 const initialMessages = [
   { id: 1, author: "assistant", text: "Olá! Pergunta o que quiser sobre skins e preços." },
 ];
 
-const botResponses = {
-  "dragon lore": "Dragon Lore é uma skin AWP Covert de alto valor e muito procurada.",
-  "avg price": "A média de preço no recente dataset está em torno de €~500 para os itens listados.",
-  default: "Estou aqui para ajudar com perguntas de skins; tenta algo como 'Qual skin é mais rara?'",
-};
-
 export default function ChatPage() {
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
-  function handleSend() {
-    if (!input.trim()) return;
+  async function handleSend() {
+    const question = input.trim();
+    if (!question || isSending) return;
 
-    const userMessage = { id: Date.now(), author: "user", text: input.trim() };
-    const key = input.toLowerCase();
-    const matched = Object.keys(botResponses).find((k) => key.includes(k));
-    const botText = matched ? botResponses[matched] : botResponses.default;
-
-    setMessages((prev) => [...prev, userMessage, { id: Date.now() + 1, author: "assistant", text: botText }]);
+    const userMessage = { id: Date.now(), author: "user", text: question };
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsSending(true);
+
+    try {
+      const response = await chatWithAgent(question);
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 1, author: "assistant", text: response.answer },
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          author: "assistant",
+          text: error.message || "Não foi possível obter resposta do agente.",
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
   }
 
   return (
@@ -51,11 +64,14 @@ export default function ChatPage() {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="Escreve a tua pergunta..."
+            disabled={isSending}
             onKeyDown={(event) => {
               if (event.key === "Enter") handleSend();
             }}
           />
-          <button className="primary-btn" onClick={handleSend}>Enviar</button>
+          <button className="primary-btn" onClick={handleSend} disabled={isSending}>
+            {isSending ? "A enviar..." : "Enviar"}
+          </button>
         </div>
       </div>
     </section>
