@@ -1,4 +1,3 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080"
 import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8080";
@@ -18,23 +17,6 @@ export async function getCurrentUser() {
   return response.data;
 }
 
-export async function chatWithAgent(message) {
-  const res = await fetch(`${API_URL}/chat`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ message }),
-  })
-
-  const data = await res.json()
-
-  if (!res.ok) {
-    throw new Error(data?.answer || "Erro ao comunicar com o agente")
-  }
-
-  return data
-}
 export async function getSteamProfile() {
   const response = await api.get("/auth/steam/profile");
   return response.data;
