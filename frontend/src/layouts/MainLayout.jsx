@@ -1,10 +1,16 @@
 import Navbar from "../components/Navbar";
 
-export default function MainLayout({ children, currentPage, onNavigate }) {
+function MainLayout({ children, activePage, setActivePage, steamLoggedIn }) {
   return (
     <div className="app-shell">
-      <Navbar currentPage={currentPage} onNavigate={onNavigate} />
+      <Navbar
+        activePage={activePage}
+        setActivePage={setActivePage}
+        steamLoggedIn={steamLoggedIn}
+      />
       <main className="main-content">{children}</main>
     </div>
   );
 }
+
+export default MainLayout;
