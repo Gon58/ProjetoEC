@@ -347,3 +347,125 @@ button {
     flex-direction: column;
   }
 }
+
+.profile-card {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 24px;
+  align-items: center;
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 18px;
+  padding: 24px;
+}
+
+.profile-avatar,
+.profile-avatar-placeholder {
+  width: 160px;
+  height: 160px;
+  border-radius: 18px;
+}
+
+.profile-avatar {
+  object-fit: cover;
+  border: 1px solid #334155;
+}
+
+.profile-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1f2937;
+  color: #94a3b8;
+  border: 1px solid #334155;
+}
+
+.profile-card-right h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.8rem;
+}
+
+.profile-card-right p {
+  margin: 8px 0;
+  color: #cbd5e1;
+}
+
+.profile-link {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.profile-link:hover {
+  text-decoration: underline;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.inventory-card {
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.inventory-image-wrapper {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top, #1e293b, #0f172a);
+  padding: 16px;
+}
+
+.inventory-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.inventory-image-placeholder {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.inventory-body {
+  padding: 16px;
+}
+
+.inventory-body h4 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.inventory-type {
+  margin: 0 0 14px;
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
+.inventory-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 700px) {
+  .profile-card {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card-left {
+    display: flex;
+    justify-content: center;
+  }
+}
