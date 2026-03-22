@@ -32,6 +32,20 @@ export async function logoutSteam() {
   return response.data;
 }
 
+export async function getLogs({ parentId = null, page = 1, pageSize = 5 } = {}) {
+  const params = {
+    page,
+    page_size: pageSize,
+  };
+
+  if (parentId !== null && parentId !== undefined) {
+    params.parent_id = parentId;
+  }
+
+  const response = await api.get("/logs", { params });
+  return response.data;
+}
+
 export function getSteamLoginUrl() {
   return `${API_BASE_URL}/auth/steam/login`;
 }

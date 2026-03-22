@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 
 from ..db.connections import check_chromadb, check_mongodb, check_postgres
 from ..db.postgres import fetch_skinport_skins
+from ..services.logs import fetch_logs
 from ..db.vectorial import index_document, search_documents
 from ..schemas.requests import DocumentIndexRequest, SearchRequest
 
@@ -112,4 +113,22 @@ def search_skins_endpoint(limit: int = 100) -> JSONResponse:
         JSON resultados.
     """
     result = fetch_skinport_skins(limit=limit)
+    return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
+
+
+@router.get("/logs")
+def get_logs_endpoint(
+    parent_id: int | None = None,
+    page: int = 1,
+    page_size: int = 10,
+) -> JSONResponse:
+    """Return paginated logs for first level (parents) or second level (children)."""
+    normalized_page = max(1, page)
+    normalized_page_size = min(max(1, page_size), 100)
+
+    result = fetch_logs(
+        parent_id=parent_id,
+        page=normalized_page,
+        page_size=normalized_page_size,
+    )
     return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
