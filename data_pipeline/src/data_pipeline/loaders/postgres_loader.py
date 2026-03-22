@@ -49,6 +49,7 @@ def create_tables(engine: Engine) -> None:
                 CREATE TABLE IF NOT EXISTS ingestion_logs (
                     id SERIAL PRIMARY KEY,
                     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    parent_log_id INTEGER,
                     source VARCHAR(50) NOT NULL,
                     event_type VARCHAR(50) NOT NULL,
                     description TEXT,
@@ -62,6 +63,7 @@ def create_tables(engine: Engine) -> None:
             )
         )
         conn.execute(text("ALTER TABLE ingestion_logs ADD COLUMN IF NOT EXISTS description TEXT"))
+        conn.execute(text("ALTER TABLE ingestion_logs ADD COLUMN IF NOT EXISTS parent_log_id INTEGER"))
 
 
 def parse_quantity(value: str) -> int:
