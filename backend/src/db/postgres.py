@@ -1,7 +1,6 @@
 from typing import Any
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from ..core.config import POSTGRES_URL
 
@@ -16,40 +15,36 @@ def _get_engine():
 def fetch_skinport_skins(limit: int = 100) -> list[dict[str, Any]]:
     """Fetch skin rows from PostgreSQL restricted to Skinport records."""
     query = text("""
-        SELECT name, currency, min_price, max_price, mean_price, median_price, quantity_sold, source
+        SELECT id, name, currency, min_price, max_price, mean_price,
+               median_price, quantity_sold, source
         FROM skin
         WHERE source = :source
-        ORDER BY mean_price DESC
         LIMIT :limit
     """)
 
     with _get_engine().connect() as conn:
-        try:
-            rows = conn.execute(query, {"source": "skinport", "limit": limit}).mappings().all()
-        except (OperationalError, ProgrammingError):
-            return []
-
+        rows = conn.execute(
+            query, {"source": "skinport", "limit": limit}
+        ).mappings().all()
     return [dict(row) for row in rows]
 
 
 def fetch_skinport_skin_by_name(name: str) -> dict[str, Any] | None:
     """Fetch one Skinport skin by exact name from PostgreSQL."""
     query = text("""
-        SELECT name, currency, min_price, max_price, mean_price, median_price, quantity_sold, source
+        SELECT id, name, currency, min_price, max_price, mean_price,
+               median_price, quantity_sold, source
         FROM skin
         WHERE source = :source AND name = :name
         LIMIT 1
     """)
 
     with _get_engine().connect() as conn:
-        try:
-            row = (
-                conn.execute(query, {"source": "skinport", "name": name})
-                .mappings()
-                .first()
-            )
-        except (OperationalError, ProgrammingError):
-            return None
+        row = (
+            conn.execute(query, {"source": "skinport", "name": name})
+            .mappings()
+            .first()
+        )
 
     if not row:
         return None
@@ -177,3 +172,63 @@ def fetch_ingestion_log_by_id(log_id: int) -> dict[str, Any] | None:
         return None
 
     return dict(row)
+  
+def fetch_skinport_skin_by_id(skin_id: int) -> dict[str, Any] | None:
+    """Fetch one Skinport skin by its id from PostgreSQL."""
+    query = text("""
+        SELECT id, name, currency, min_price, max_price, mean_price,
+               median_price, quantity_sold, source
+        FROM skin
+        WHERE source = :source AND id = :skin_id
+        LIMIT 1
+    """)
+
+    with _get_engine().connect() as conn:
+        row = (
+            conn.execute(query, {"source": "skinport", "skin_id": skin_id})
+            .mappings()
+            .first()
+        )
+
+    if not row:
+        return None
+
+    return dict(row)
+
+def fetch_most_expensive_skinport_skins(
+    limit: int = 10,
+) -> list[dict[str, Any]]:
+    """Fetch the most expensive Skinport skins."""
+    query = text("""
+        SELECT id, name, currency, min_price, max_price, mean_price,
+               median_price, quantity_sold, source
+        FROM skin
+        WHERE source = :source
+        ORDER BY mean_price DESC
+        LIMIT :limit
+    """)
+
+    with _get_engine().connect() as conn:
+        rows = conn.execute(
+            query, {"source": "skinport", "limit": limit}
+        ).mappings().all()
+    return [dict(row) for row in rows]
+
+def fetch_best_selling_skinport_skins(
+    limit: int = 10,
+) -> list[dict[str, Any]]:
+    """Fetch the best selling Skinport skins."""
+    query = text("""
+        SELECT id, name, currency, min_price, max_price, mean_price,
+               median_price, quantity_sold, source
+        FROM skin
+        WHERE source = :source
+        ORDER BY quantity_sold DESC
+        LIMIT :limit
+    """)
+
+    with _get_engine().connect() as conn:
+        rows = conn.execute(
+            query, {"source": "skinport", "limit": limit}
+        ).mappings().all()
+    return [dict(row) for row in rows]
