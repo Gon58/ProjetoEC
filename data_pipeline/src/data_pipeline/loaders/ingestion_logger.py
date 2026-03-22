@@ -22,7 +22,7 @@ def _resolve_postgres_url() -> str | None:
     if not all([db, user, password]):
         return None
 
-    return f"postgresql://{user}:{password}@127.0.0.1:{port}/{db}"
+    return f"postgresql://{user}:{password}@localhost:{port}/{db}"
     
 
 def _ensure_ingestion_logs_table() -> None:
