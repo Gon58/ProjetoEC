@@ -13,6 +13,11 @@ export async function healthCheck() {
   return response.data;
 }
 
+export async function getCurrentUser() {
+  const response = await api.get("/auth/me");
+  return response.data;
+}
+
 export async function chatWithAgent(message) {
   const res = await fetch(`${API_URL}/chat`, {
     method: "POST",
@@ -30,11 +35,6 @@ export async function chatWithAgent(message) {
 
   return data
 }
-export async function getCurrentUser() {
-  const response = await api.get("/auth/me");
-  return response.data;
-}
-
 export async function getSteamProfile() {
   const response = await api.get("/auth/steam/profile");
   return response.data;
