@@ -16,6 +16,8 @@ services:
       - CHROMA_PORT=8000
       - OLLAMA_BASE_URL=http://ec-project-ollama:11434
       - EMBEDDING_MODEL=nomic-embed-text
+      - SESSION_SECRET=${SESSION_SECRET}
+      - STEAM_API_KEY=${STEAM_API_KEY}
     depends_on:
       ec-project-postgres:
         condition: service_healthy

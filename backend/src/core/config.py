@@ -26,3 +26,5 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")
 
 # Other
 STEAM_APP_ID = os.getenv("STEAM_APP_ID")
+STEAM_API_KEY = os.getenv("STEAM_API_KEY")
+SESSION_SECRET = os.getenv("SESSION_SECRET")
