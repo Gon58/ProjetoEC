@@ -18,7 +18,7 @@ def load_system_prompt() -> str:
 
 def chat_nesy_agent(mensagem_utilizador: str) -> str:
     """
-    O Router Neuro-Simbólico principal.
+    Main NeSy router.
     """
 
     print(f"A verificar/instalar o modelo {LLM_MODEL} no Docker...")
@@ -28,7 +28,7 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
     client = get_ollama_client()
     system_prompt = load_system_prompt()
     
-    mensagens = [
+    messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": mensagem_utilizador}
     ]
@@ -43,11 +43,11 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
     # router
     resposta_llm = client.chat(
         model=LLM_MODEL,
-        messages=mensagens,
+        messages=messages,
         tools=[consultar_estatisticas_skin, pesquisar_opiniao_comunidade]
     )
     
-    mensagens.append(resposta_llm["message"])
+    messages.append(resposta_llm["message"])
     
     # verificar se o LLM decidiu chamar alguma ferramenta
     if resposta_llm.get("message", {}).get("tool_calls"):
@@ -73,16 +73,16 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
                     },
                 )
                 
-                mensagens.append({
+                messages.append({
                     "role": "tool",
                     "content": str(resultado_bruto),
                     "name": nome_da_tool
                 })
                 
-        # resposta final
+        # final answer
         resposta_final = client.chat(
             model=LLM_MODEL,
-            messages=mensagens
+            messages=messages
         )
         resposta_texto = resposta_final["message"]["content"]
         _log_event("agent_output", {"message": mensagem_utilizador, "output": resposta_texto})

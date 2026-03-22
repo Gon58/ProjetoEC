@@ -106,7 +106,7 @@ def search_documents_endpoint(request: SearchRequest) -> JSONResponse:
 
 @router.post("/chat", response_model=ChatResponse)
 def chat_endpoint(request: ChatRequest) -> JSONResponse:
-    """Endpoint de chat para o frontend usar o agente NeSy."""
+    """Chat endpoint for the frontend to use the NeSy agent."""
     try:
         answer = chat_nesy_agent(request.message)
         payload = {
