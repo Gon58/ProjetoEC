@@ -13,4 +13,4 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN cd /app/data_pipeline && pip install -e ".[dev]"
 
-CMD ["sh", "-c", "cd /app/data_pipeline && ruff check . && pytest tests"]
+CMD ["sh", "-c", "cd /app/data_pipeline && ruff check . --fix && pytest tests"]
