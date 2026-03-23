@@ -8,9 +8,15 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from ..db.connections import check_chromadb, check_mongodb, check_postgres
-from ..db.postgres import fetch_skinport_skins
+from ..db.postgres import (
+    fetch_best_selling_skinport_skins,
+    fetch_most_expensive_skinport_skins,
+    fetch_skinport_skin_by_id,
+    fetch_skinport_skins,
+)
 from ..db.vectorial import index_document, search_documents
-from ..schemas.requests import DocumentIndexRequest, SearchRequest
+from ..schemas.requests import ChatRequest, ChatResponse, DocumentIndexRequest, SearchRequest
+from ..services.agent import chat_nesy_agent
 from ..services.logs import fetch_logs
 
 router = APIRouter()
@@ -99,23 +105,73 @@ def search_documents_endpoint(request: SearchRequest) -> JSONResponse:
     return JSONResponse(content=result, status_code=status_code)
 
 
+@router.post("/chat", response_model=ChatResponse)
+def chat_endpoint(request: ChatRequest) -> JSONResponse:
+    """Chat endpoint for the frontend to use the NeSy agent."""
+    try:
+        answer = chat_nesy_agent(request.message)
+        payload = {
+            "status": "success",
+            "message": request.message,
+            "answer": answer,
+        }
+        return JSONResponse(content=payload, status_code=status.HTTP_200_OK)
+    except Exception as e:
+        payload = {
+            "status": "error",
+            "message": request.message,
+            "answer": f"Erro no agente: {e}",
+        }
+        return JSONResponse(content=payload, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @router.get("/skins")
 def search_skins_endpoint(limit: int = 100) -> JSONResponse:
     """
-    Endpoint para ir buscar as skins para a web App.
+    Endpoint to get all skins for the web app.
 
-    Vai buscar as skins à base de dados relacional e retorna 100 resultados
+    Fetches skins from the relational database and returns 100 results.
 
     Args:
-        limit: Limite de resultados (padrão: 100).
+        limit: Limit of results (default: 100).
+    Returns:
+        JSON with query results.
+    """
+    try:
+        result = fetch_skinport_skins(limit=limit)
+        return JSONResponse(content=jsonable_encoder(result),
+                             status_code=status.HTTP_200_OK)
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@router.get("/skins/id/{skin_id}")
+def get_skin_by_id(skin_id: int) -> JSONResponse:
+    """
+    Endpoint to get a specific skin by its ID.
+
+    Args:
+        skin_id: ID of the skin to retrieve.
 
     Returns:
-        JSON resultados.
+        JSON with query results.
     """
-    result = fetch_skinport_skins(limit=limit)
-    return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
-
-
+    try:
+        result = fetch_skinport_skin_by_id(skin_id=skin_id)
+        if result:
+            return JSONResponse(content=jsonable_encoder(result),
+                                status_code=status.HTTP_200_OK)
+        else:
+            return JSONResponse(content={"error": "Skin not found"},
+                    status_code=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
 @router.get("/logs")
 def get_logs_endpoint(
     parent_id: int | None = None,
@@ -132,3 +188,45 @@ def get_logs_endpoint(
         page_size=normalized_page_size,
     )
     return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
+    
+@router.get("/skins/most-expensive")
+def get_most_expensive_skins(limit: int = 10) -> JSONResponse:
+    """
+    Endpoint to get the most expensive skins.
+
+    Args:
+        limit: Number of top expensive skins to retrieve (default: 10).
+
+    Returns:
+        JSON with query results.
+    """
+    try:
+        result = fetch_most_expensive_skinport_skins(limit=limit)
+        return JSONResponse(content=jsonable_encoder(result),
+                            status_code=status.HTTP_200_OK)
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@router.get("/skins/best-selling")
+def get_best_selling_skins(limit: int = 10) -> JSONResponse:
+    """
+    Endpoint to get the best selling skins.
+
+    Args:
+        limit: Number of best selling skins to retrieve (default: 10).
+
+    Returns:
+        JSON with query results.
+    """
+    try:
+        result = fetch_best_selling_skinport_skins(limit=limit)
+        return JSONResponse(content=jsonable_encoder(result),
+                            status_code=status.HTTP_200_OK)
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

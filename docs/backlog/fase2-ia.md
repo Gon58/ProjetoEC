@@ -23,9 +23,9 @@
 
 ## Semana 7 - NeSy + Prompts
 
-- [ ] Criar prompts.yaml
-- [ ] Implementar lógica de decisão (router)
-- [ ] Implementar logging de inputs/outputs
+- [x] Criar prompts.yaml
+- [x] Implementar lógica de decisão (router)
+- [x] Implementar logging de inputs/outputs
 - User Stories: US02, US10
 - ADRs: ADR 006, ADR 011
 
