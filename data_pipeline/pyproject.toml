@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data_pipeline"
+version = "0.1.0"
+description = "Data pipeline for EC project"
+authors = [{name = "EC-Project"}]
+requires-python = ">=3.11"
+dependencies = [
+    "python-dotenv",
+    "psycopg2-binary",
+    "pymongo",
+    "sqlalchemy",
+    "chromadb",
+    "pandas",
+    "psycopg"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

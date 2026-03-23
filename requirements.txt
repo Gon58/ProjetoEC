@@ -13,3 +13,4 @@ pymongo
 chromadb
 ollama
 SQLAlchemy>=2.0.0
+PyYAML

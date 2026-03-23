@@ -2,62 +2,79 @@
 
 **Data:** 2026-03-01
 
-**Status:** Aceito
+**Status:** Aceite
 
 **Responsável/Autores:** André Carvalho, João Costa
 
+---
+
 ## 1. Contexto e Problema
 
-O sistema RAG com Chroma DB precisa de converter os dados de entrada em embeddings vetoriais para:
+O sistema RAG requer a conversão de dados não estruturados em embeddings vetoriais para permitir:
+- Pesquisa semântica;
+- Suporte à decisão baseado em contexto;
+- Recuperação eficiente de informação.
 
-- Recomendações semânticas por preço e características;
-- Suporte a decisão de investimentos;
-- Exploração de tendências de mercado;
-- Tempo resposta < 10s.
+De acordo com os requisitos do sistema, é necessário garantir:
+- Tempo de resposta aceitável (< 10s);
+- Baixo custo (contexto académico);
+- Integração com arquitetura local (Docker);
+- Qualidade semântica suficiente para RAG.
 
-A escolha do modelo de embedding é crítica para o trade-off entre **latência, custo, privacidade, e qualidade semântica**.
+---
 
 ## 2. Opções Consideradas
 
-* **Opção 1:** Ollama com  `embeddinggemma` (local, offline).
-* **Opção 2:** Sentence-Transformers `all-MiniLM-L6-v2` (local).
-* **Opção 3:** Ollama com `nomic-embed-text` (local, offline).
-* **Opção 4:** Cohere Embed API (cloud, balanço custo/qualidade).
+* Opção 1 - Ollama com `embeddinggemma` (local)
+* Opção 2 - Sentence-Transformers `all-MiniLM-L6-v2` (local)
+* Opção 3 - Ollama com `nomic-embed-text` (local)
+* Opção 4 - Cohere Embed API (cloud)
+
+---
 
 ## 3. Decisão
 
-**Implementado:** Ollama com modelo `embeddinggemma` (local, containerizado com Docker)
+**Ollama com modelo `embeddinggemma` (local)**
+
+---
 
 ## 4. Justificação
 
-### Por que Ollama com `embeddinggemma`?
+A escolha recai sobre um modelo local devido ao melhor controlo sobre custo, latência e privacidade.
 
-**Vantagens:**
+### Vantagens:
+- Execução local (sem dependência de APIs externas);
+- Sem custos e sem rate limits;
+- Boa qualidade semântica (768 dimensões);
+- Latência adequada ao sistema (< 10s global);
+- Integração direta com Docker e restante arquitetura;
+- Facilidade de substituição de modelo no ecossistema Ollama.
 
-- **Latência:** ~100-200ms por embedding, aceitável para o requisito < 10s.
-- **Dimensões:** 768 dimensões, melhor qualidade semântica.
-- **Privacidade:** 100% local, dados permanecem *on-premises*.
-- **Containerização:** Integra perfeitamente com arquitetura Docker existente (postgres, mongo, chroma).
-- **Sem dependências API:** Zero custo, sem rate limits, sem chaves de API.
-- **Batch-friendly:** Suporta processamento em lote via `embed_texts()`.
-- **Ecosystem:** Ollama permite trocar de modelo facilmente se necessário.
-- **Auto-download:** Modelo é baixado automaticamente na primeira utilização.
+### Comparação com alternativas:
+- **Sentence-Transformers**: Simples e leve, mas com menor qualidade semântica comparativamente;
+- **nomic-embed-text**: Alternativa válida, mas sem vantagens claras face à opção escolhida;
+- **Cohere API**: Boa qualidade, mas introduz custos, dependência externa e latência adicional.
 
-**Trade-offs:**
+A decisão privilegia uma solução local e estável, adequada ao contexto de MVP.
 
-- Requer mais memória RAM.
-- Adiciona um serviço extra ao Docker Compose.
+---
 
-### Arquitetura Implementada
+## 5. Consequências
 
-1. **Serviço Ollama:** Container `ec-project-ollama` na porta 11434.
-2. **Embedding Service:** `src/services/embeddings.py` com funções `embed_text()` e `embed_texts()` (sempre usa embeddinggemma).
-3. **Integração Chroma:** `src/db/connections.py` com `index_document()` e `search_documents()`.
-4. **API Endpoints:** `/index` (POST) e `/search` (POST) no `src/main.py`.
-5. **Testes:** `tests/test_vectorial.py` com unittest + mocks, smoke tests validados.
+### Positivas
+- Independência de serviços externos;
+- Redução de custos (zero uso de APIs pagas);
+- Maior controlo sobre latência e desempenho;
+- Boa integração com pipeline RAG;
+- Alinhamento com arquitetura containerizada.
 
-### Estratégia de Escalamento
+### Negativas
+- Maior consumo de recursos (RAM/CPU);
+- Necessidade de gerir um serviço adicional (Ollama);
+- Possível limitação na qualidade face a modelos cloud mais avançados.
 
-1. **MVP:** Deployment com `embeddinggemma` já concluído.
-2. **Monitorizar:** Medir latência real em produção, validar < 10s.
-3. **Futuro:** Se precisar de melhor performance → avaliar outros modelos Ollama (mxbai-embed-large, etc).
+### Mitigações
+- Monitorização de performance e latência;
+- Possibilidade de troca de modelo dentro do ecossistema Ollama;
+- Escalar para solução cloud caso necessário em fases futuras;
+- Limitar volume de embeddings no MVP.

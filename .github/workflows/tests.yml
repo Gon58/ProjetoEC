@@ -1,0 +1,55 @@
+name: Run Tests (Docker)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Create mock .env file
+        run: |
+          echo "DB_USER=ec_project" >> .env
+          echo "DB_PASSWORD=ec_project_pass" >> .env
+          echo "DB_NAME=ec_project" >> .env
+          echo "POSTGRES_URL=postgresql://ec_project:ec_project_pass@ec-project-postgres:5432/ec_project" >> .env
+          echo "MONGO_HOST=ec-project-mongo" >> .env
+          echo "MONGO_PORT=27017" >> .env
+          echo "MONGO_DB=ec_project" >> .env
+          echo "CHROMA_HOST=ec-project-chroma" >> .env
+          echo "CHROMA_PORT=8000" >> .env
+          echo "OLLAMA_BASE_URL=http://ec-project-ollama:11434" >> .env
+          echo "LLM_MODEL=llama3.1" >> .env
+
+      - name: Create mock .env file
+        run: |
+          echo "DB_USER=ec_project" >> .env
+          echo "DB_PASSWORD=ec_project_pass" >> .env
+          echo "DB_NAME=ec_project" >> .env
+          echo "POSTGRES_URL=postgresql://ec_project:ec_project_pass@ec-project-postgres:5432/ec_project" >> .env
+          echo "MONGO_HOST=ec-project-mongo" >> .env
+          echo "MONGO_PORT=27017" >> .env
+          echo "MONGO_DB=ec_project" >> .env
+          echo "CHROMA_HOST=ec-project-chroma" >> .env
+          echo "CHROMA_PORT=8000" >> .env
+          echo "OLLAMA_BASE_URL=http://ec-project-ollama:11434" >> .env
+          echo "LLM_MODEL=llama3.1" >> .env
+
+      - name: Build and run tests
+        run: |
+          docker compose up -d ec-project-postgres ec-project-mongo ec-project-chroma
+          
+          echo "Waiting for Postgres..."
+          sleep 10
+
+          docker compose build ec-project-tests
+          docker compose run --rm ec-project-tests
