@@ -104,7 +104,11 @@ def fetch_parent_ingestion_logs(page: int, page_size: int) -> tuple[list[dict[st
     return [dict(row) for row in rows], total_items
 
 
-def fetch_child_ingestion_logs(parent_id: int, page: int, page_size: int) -> tuple[list[dict[str, Any]], int]:
+def fetch_child_ingestion_logs(
+    parent_id: int,
+    page: int,
+    page_size: int,
+) -> tuple[list[dict[str, Any]], int]:
     """Fetch paginated child logs linked to the given parent id."""
     offset = (page - 1) * page_size
 

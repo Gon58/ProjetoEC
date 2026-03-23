@@ -39,7 +39,11 @@ def fetch_logs(parent_id: int | None, page: int, page_size: int) -> dict[str, An
             "level": "parent",
             "parent_id": None,
             "items": items,
-            "pagination": _build_pagination(page=page, page_size=page_size, total_items=total_items),
+            "pagination": _build_pagination(
+                page=page,
+                page_size=page_size,
+                total_items=total_items,
+            ),
         }
 
     child_rows, total_items = fetch_child_ingestion_logs(
@@ -54,5 +58,9 @@ def fetch_logs(parent_id: int | None, page: int, page_size: int) -> dict[str, An
         "parent_id": parent_id,
         "parent": parent,
         "items": child_rows,
-        "pagination": _build_pagination(page=page, page_size=page_size, total_items=total_items),
+        "pagination": _build_pagination(
+            page=page,
+            page_size=page_size,
+            total_items=total_items,
+        ),
     }
