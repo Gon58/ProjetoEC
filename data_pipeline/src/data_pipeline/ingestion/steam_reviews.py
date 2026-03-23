@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple
 import requests
 from dotenv import load_dotenv
 from pymongo import MongoClient
+from ..loaders.ingestion_logger import log_ingestion_event
 
 load_dotenv()
 
@@ -99,6 +100,15 @@ def log_ingestion_run(appid: int, total: int, relevant: int, status: str = "succ
             "status": status,
             "timestamp": time.time(),
         }
+    )
+
+    log_ingestion_event(
+        source="steam_reviews",
+        event_type="ingestion_run",
+        description=f"Ingested {total} Steam reviews for app {appid}, with {relevant} market-related reviews.",
+        status=status,
+        records_count=total,
+        details={"appid": appid, "relevant": relevant},
     )
 
 

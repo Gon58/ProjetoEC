@@ -220,6 +220,20 @@ button {
   margin-bottom: 18px;
 }
 
+.logs-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.logs-error {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #fca5a5;
+}
+
 .table-wrapper {
   overflow-x: auto;
 }
@@ -244,6 +258,27 @@ button {
 
 .skins-table td {
   color: #e5e7eb;
+}
+
+.log-row-clickable {
+  cursor: pointer;
+}
+
+.log-row-clickable:hover {
+  background: rgba(29, 78, 216, 0.18);
+}
+
+.logs-pagination {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.logs-pagination span {
+  color: #cbd5e1;
+  font-size: 0.95rem;
 }
 
 .chat-page {
@@ -331,6 +366,16 @@ button {
     flex-direction: column;
     gap: 14px;
     align-items: flex-start;
+  }
+
+  .logs-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .logs-pagination {
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }
 

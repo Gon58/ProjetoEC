@@ -1,8 +1,8 @@
 services:
   ec-project-backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: ec-project-backend
     ports:
       - "8080:8080"
@@ -48,7 +48,7 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - ec_project_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -85,8 +85,8 @@ services:
 
   ec-project-tests:
     build:
-      context: ./data_pipeline
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: data_pipeline/Dockerfile
     container_name: ec-project-tests
     depends_on:
       ec-project-postgres:

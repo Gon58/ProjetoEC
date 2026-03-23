@@ -27,15 +27,15 @@ function Navbar({ activePage, setActivePage, steamLoggedIn }) {
         </button>
 
         <button
-          className={currentPage === "history" ? "nav-btn active" : "nav-btn"}
-          onClick={() => onNavigate("history")}
+          className={`nav-btn ${activePage === "history" ? "active" : ""}`}
+          onClick={() => setActivePage("history")}
         >
           Histórico
         </button>
         
         <button
-          className={currentPage === "logs" ? "nav-btn active" : "nav-btn"}
-          onClick={() => onNavigate("logs")}
+          className={`nav-btn ${activePage === "logs" ? "active" : ""}`}
+          onClick={() => setActivePage("logs")}
         >
           Logs
         </button>

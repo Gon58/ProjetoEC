@@ -17,6 +17,7 @@ from ..db.postgres import (
 from ..db.vectorial import index_document, search_documents
 from ..schemas.requests import ChatRequest, ChatResponse, DocumentIndexRequest, SearchRequest
 from ..services.agent import chat_nesy_agent
+from ..services.logs import fetch_logs
 
 router = APIRouter()
 
@@ -170,6 +171,23 @@ def get_skin_by_id(skin_id: int) -> JSONResponse:
             content={"error": str(e)},
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+@router.get("/logs")
+def get_logs_endpoint(
+    parent_id: int | None = None,
+    page: int = 1,
+    page_size: int = 10,
+) -> JSONResponse:
+    """Return paginated logs for first level (parents) or second level (children)."""
+    normalized_page = max(1, page)
+    normalized_page_size = min(max(1, page_size), 100)
+
+    result = fetch_logs(
+        parent_id=parent_id,
+        page=normalized_page,
+        page_size=normalized_page_size,
+    )
+    return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
     
 @router.get("/skins/most-expensive")
 def get_most_expensive_skins(limit: int = 10) -> JSONResponse:
