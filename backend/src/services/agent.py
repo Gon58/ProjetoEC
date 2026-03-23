@@ -185,14 +185,9 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
                     "name": nome_da_tool
                 })
                 
-<<<<<<< Updated upstream
-        # final answer
-        resposta_final = client.chat(
-=======
         # resposta final
         resposta_final = _chat_with_timeout(
             client,
->>>>>>> Stashed changes
             model=LLM_MODEL,
             messages=messages
         )
