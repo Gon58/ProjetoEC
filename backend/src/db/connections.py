@@ -10,7 +10,11 @@ from ..core.config import CHROMA_HOST, CHROMA_PORT, MONGO_HOST, MONGO_PORT, POST
 def check_postgres() -> Dict[str, Any]:
     """Checks connection to PostgreSQL."""
     try:
-        with psycopg.connect(POSTGRES_URL, connect_timeout=3) as conn:
+        postgres_url_limpo = (POSTGRES_URL or "").replace(
+            "postgresql+psycopg://",
+            "postgresql://",
+        )
+        with psycopg.connect(postgres_url_limpo, connect_timeout=3) as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT 1")
                 cur.fetchone()
