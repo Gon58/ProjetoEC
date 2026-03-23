@@ -33,5 +33,8 @@ class TestChatAPI(unittest.TestCase):
         body = response.json()
         self.assertEqual(body["status"], "error")
         self.assertEqual(body["message"], payload["message"])
-        self.assertIn("Erro no agente", body["answer"])
+        self.assertEqual(
+            body["answer"],
+            "Nao foi possivel processar a mensagem neste momento.",
+        )
         mock_chat.assert_called_once_with(payload["message"])

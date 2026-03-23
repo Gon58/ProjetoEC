@@ -172,6 +172,32 @@ class TestVectorialSearch(unittest.TestCase):
         call_args = mock_search.call_args
         self.assertEqual(call_args.kwargs["n_results"], 10)
 
+    @patch('src.api.routes.search_documents')
+    def test_search_with_collection_and_threshold(self, mock_search):
+        """Testa passagem de collection_name e distance_threshold para a busca."""
+        mock_search.return_value = {
+            "status": "success",
+            "query": "test",
+            "collection_name": "steam_reviews",
+            "distance_threshold": 0.8,
+            "total_results": 1,
+            "results": [{"chunk_id": "test_chunk"}],
+        }
+
+        payload = {
+            "query": "test",
+            "n_results": 3,
+            "collection_name": "steam_reviews",
+            "distance_threshold": 0.8,
+        }
+
+        response = self.client.post("/search", json=payload)
+
+        self.assertEqual(response.status_code, 200)
+        call_args = mock_search.call_args
+        self.assertEqual(call_args.kwargs["collection_name"], "steam_reviews")
+        self.assertEqual(call_args.kwargs["distance_threshold"], 0.8)
+
 
 if __name__ == '__main__':
     unittest.main()

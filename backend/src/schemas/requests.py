@@ -1,21 +1,25 @@
 """Pydantic models for API requests."""
 
-from typing import Dict, Optional
+from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from ..core.config import RAG_COLLECTION_NAME
 
 
 class DocumentIndexRequest(BaseModel):
     """Modelo para requisição de indexação de documento."""
     doc_id: str
     text: str
-    metadata: Optional[Dict] = None
+    metadata: dict[str, Any] | None = None
 
 
 class SearchRequest(BaseModel):
     """Modelo para requisição de busca vetorial."""
     query: str
-    n_results: int = 5
+    n_results: int = Field(default=5, ge=1, le=20)
+    collection_name: str = RAG_COLLECTION_NAME
+    distance_threshold: float | None = Field(default=None, ge=0.0)
 
 
 class ChatRequest(BaseModel):

@@ -95,7 +95,9 @@ def search_documents_endpoint(request: SearchRequest) -> JSONResponse:
     """
     result = search_documents(
         query=request.query,
+        collection_name=request.collection_name,
         n_results=request.n_results,
+        distance_threshold=request.distance_threshold,
     )
 
     if result["status"] == "success":
@@ -107,7 +109,7 @@ def search_documents_endpoint(request: SearchRequest) -> JSONResponse:
 
 @router.post("/chat", response_model=ChatResponse)
 def chat_endpoint(request: ChatRequest) -> JSONResponse:
-    """Chat endpoint for the frontend to use the NeSy agent."""
+    """Handles chat requests through the NeSy agent and returns safe API errors."""
     try:
         answer = chat_nesy_agent(request.message)
         payload = {
@@ -116,11 +118,11 @@ def chat_endpoint(request: ChatRequest) -> JSONResponse:
             "answer": answer,
         }
         return JSONResponse(content=payload, status_code=status.HTTP_200_OK)
-    except Exception as e:
+    except Exception:
         payload = {
             "status": "error",
             "message": request.message,
-            "answer": f"Erro no agente: {e}",
+            "answer": "Nao foi possivel processar a mensagem neste momento.",
         }
         return JSONResponse(content=payload, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

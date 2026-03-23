@@ -1,7 +1,7 @@
 import psycopg
 from dotenv import load_dotenv
 
-from ..core.config import POSTGRES_URL
+from ..core.config import POSTGRES_URL, RAG_COLLECTION_NAME
 from ..core.prompts import get_prompt
 
 load_dotenv()
@@ -69,13 +69,13 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
 
 # FERRAMENTA 2: A ponte para o RAG (Textos e Opiniões)
 def pesquisar_opiniao_comunidade(topico: str) -> str:
-    """Pesquisa opiniao e contexto semantico da comunidade via busca vetorial."""
+    """Searches community context through vector retrieval with graceful empty fallback."""
     # Função que chama a busca vetorial no ChromaDB para obter
     # opiniões relevantes do Reddit ou fóruns.
     from src.db.vectorial import search_documents
 
-    resultado = search_documents(query=topico, collection_name="reddit_posts", n_results=3)
-    if resultado["status"] == "success":
+    resultado = search_documents(query=topico, collection_name=RAG_COLLECTION_NAME, n_results=3)
+    if resultado["status"] == "success" and resultado.get("results"):
         # Junta todos os textos encontrados para o LLM ler
         textos = [res["text"] for res in resultado["results"]]
         prefix = get_prompt(

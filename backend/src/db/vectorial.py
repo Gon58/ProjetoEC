@@ -7,7 +7,8 @@ using embeddings generated via Ollama (embeddinggemma).
 
 from typing import Any, Dict
 
-from ..services.embeddings import embed_text, embed_texts
+from ..core.config import MIN_CHUNK_LENGTH, SEARCH_DISTANCE_THRESHOLD
+from ..services.embeddings import EmbeddingError, embed_text, embed_texts
 from .connections import get_chroma_client
 
 
@@ -40,16 +41,31 @@ def index_document(
         Exception: If indexing fails.
     """
     try:
+        if chunk_size <= 0:
+            return {"status": "error", "message": "chunk_size must be greater than zero"}
+
+        if overlap < 0 or overlap >= chunk_size:
+            return {"status": "error", "message": "overlap must be >= 0 and < chunk_size"}
+
         if metadata is None:
             metadata = {}
 
+        normalized_text = " ".join(text.split())
+        if not normalized_text:
+            return {"status": "error", "message": "Document text is empty after normalization"}
+
         # Split the document into chunks
         chunks = []
-        for i in range(0, len(text), chunk_size - overlap):
-            chunks.append(text[i : i + chunk_size])
+        for i in range(0, len(normalized_text), chunk_size - overlap):
+            chunk = normalized_text[i : i + chunk_size]
+            if len(chunk) >= MIN_CHUNK_LENGTH:
+                chunks.append(chunk)
 
         if not chunks:
-            return {"status": "error", "message": "No chunks created"}
+            return {
+                "status": "error",
+                "message": "No chunks created after min_chunk_length filtering",
+            }
 
         # Generate embeddings for the chunks
         embeddings = embed_texts(chunks)
@@ -76,14 +92,21 @@ def index_document(
             "doc_id": doc_id,
             "chunks_indexed": len(chunks),
         }
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    except EmbeddingError as exc:
+        return {
+            "status": "error",
+            "error_code": "embedding_failure",
+            "message": str(exc),
+        }
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
 
 
 def search_documents(
     query: str,
     collection_name: str = "documents",
     n_results: int = 5,
+    distance_threshold: float | None = SEARCH_DISTANCE_THRESHOLD,
 ) -> Dict[str, Any]:
     """
     Searches documents in ChromaDB using semantic vector search.
@@ -95,6 +118,7 @@ def search_documents(
         query: Text of the query for semantic search.
         collection_name: Name of the collection in ChromaDB.
         n_results: Number of results to return.
+        distance_threshold: Maximum accepted distance for returned chunks.
 
     Returns:
         Dictionary with search results: query, results, total_results.
@@ -120,18 +144,39 @@ def search_documents(
             for idx, (chunk_id, distance) in enumerate(
                 zip(results["ids"][0], results["distances"][0])
             ):
+                numeric_distance = float(distance)
+                if distance_threshold is not None and numeric_distance > distance_threshold:
+                    continue
+
                 formatted_results.append({
                     "chunk_id": chunk_id,
                     "text": results["documents"][0][idx],
-                    "distance": float(distance),
+                    "distance": numeric_distance,
                     "metadata": results["metadatas"][0][idx],
                 })
 
         return {
             "status": "success",
             "query": query,
+            "collection_name": collection_name,
             "total_results": len(formatted_results),
             "results": formatted_results,
+            "distance_threshold": distance_threshold,
         }
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    except EmbeddingError as exc:
+        # Stable fallback for API/tool callers when embeddings are unavailable.
+        return {
+            "status": "success",
+            "query": query,
+            "collection_name": collection_name,
+            "total_results": 0,
+            "results": [],
+            "distance_threshold": distance_threshold,
+            "fallback": {
+                "active": True,
+                "reason_code": "embedding_failure",
+                "message": str(exc),
+            },
+        }
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}

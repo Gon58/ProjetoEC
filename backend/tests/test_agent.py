@@ -148,3 +148,63 @@ def test_chat_agent_tool_calls_analitico(
     mock_pesquisar.assert_called_once_with(topico="AK-47 | Vulcan")
     mock_ensure_model.assert_called_once()
     mock_get_prompt.assert_called_once_with("llm.system_prompt", "")
+
+
+@patch("src.services.agent.pesquisar_opiniao_comunidade", return_value="opiniao ok")
+@patch("src.services.agent.consultar_estatisticas_skin", return_value="stats ok")
+@patch("src.services.agent.ensure_model")
+@patch("src.services.agent.get_prompt", return_value="prompt de sistema")
+@patch("src.services.agent.get_ollama_client")
+def test_chat_agent_fallback_tool_call_in_content(
+    mock_get_client,
+    mock_get_prompt,
+    mock_ensure_model,
+    mock_consultar,
+    mock_pesquisar,
+):
+    client = MagicMock()
+    client.chat.side_effect = [
+        {
+            "message": {
+                "content": (
+                    '{"name":"consultar_estatisticas_skin",'
+                    '"arguments":{"nome_skin":"AK-47 | Vulcan"}}'
+                )
+            }
+        },
+        {"message": {"content": "Resposta final com fallback"}},
+    ]
+    mock_get_client.return_value = client
+
+    resposta = chat_nesy_agent("diz stats")
+
+    assert resposta == "Resposta final com fallback"
+    assert client.chat.call_count == 2
+    mock_consultar.assert_called_once_with(nome_skin="AK-47 | Vulcan")
+    mock_pesquisar.assert_not_called()
+    mock_ensure_model.assert_called_once()
+    mock_get_prompt.assert_called_once_with("llm.system_prompt", "")
+
+
+@patch(
+    "src.services.agent.consultar_estatisticas_skin",
+    return_value="Dados exatos de mercado para a skin 'AK-47 | Vulcan'.",
+)
+@patch("src.services.agent.ensure_model")
+@patch("src.services.agent.get_prompt", return_value="prompt de sistema")
+@patch("src.services.agent.get_ollama_client")
+def test_chat_agent_force_sql_route(
+    mock_get_client,
+    mock_get_prompt,
+    mock_ensure_model,
+    mock_consultar,
+):
+    resposta = chat_nesy_agent(
+        "I want SQL exact data only for skin AK-47 | Vulcan: min max mean quantity sold."
+    )
+
+    assert "Dados exatos de mercado" in resposta
+    mock_consultar.assert_called_once_with(nome_skin="AK-47 | Vulcan")
+    mock_ensure_model.assert_called_once()
+    mock_get_prompt.assert_called_once_with("llm.system_prompt", "")
+    mock_get_client.assert_called_once()
