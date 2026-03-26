@@ -3,6 +3,7 @@ import time
 
 import requests
 from dotenv import load_dotenv
+from pymongo import ASCENDING
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
@@ -59,6 +60,10 @@ def _build_mongo_client(mongo_port: int) -> MongoClient:
         return fallback_client
 
 
+def _ensure_reddit_indexes(collection) -> None:
+    collection.create_index([("post_id", ASCENDING)], unique=True, name="ux_reddit_post_id")
+
+
 def scrape_reddit_json(
     subreddit: str,
     target_documents: int = 1000,
@@ -78,6 +83,7 @@ def scrape_reddit_json(
     client = _build_mongo_client(mongo_port=mongo_port)
     db = client[mongo_db]
     collection = db[collection_name]
+    _ensure_reddit_indexes(collection)
 
     after = None
     valid_processed = 0
@@ -120,8 +126,12 @@ def scrape_reddit_json(
             if not post_data.get("selftext"):
                 continue
 
+            post_id = post_data.get("id")
+            if not post_id:
+                continue
+
             document = {
-                "post_id": post_data.get("id"),
+                "post_id": post_id,
                 "title": post_data.get("title"),
                 "selftext": post_data.get("selftext"),
                 "subreddit": post_data.get("subreddit"),
