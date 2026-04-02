@@ -15,7 +15,9 @@ dependencies = [
     "sqlalchemy",
     "chromadb",
     "pandas",
-    "psycopg"
+    "psycopg",
+    "requests",
+    "brotli"
 ]
 
 [project.optional-dependencies]
