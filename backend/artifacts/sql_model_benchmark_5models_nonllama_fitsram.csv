@@ -1,0 +1,95 @@
+timestamp_utc,model,pull_seconds,error,question_id,skin_name,question,tool_called,tool_arguments,tool_output,answer,elapsed_seconds,expected_found,expected_min_price,expected_max_price,expected_mean_price,expected_quantity_sold,expected_currency
+2026-04-13T23:12:47+00:00,qwen2.5:3b,0.0166,,q1,10 Year Birthday Sticker Capsule,"Quero dados exatos via SQL da skin '10 Year Birthday Sticker Capsule': min, max, mean e quantity sold.",True,{'nome_skin': '10 Year Birthday Sticker Capsule'},"Dados exatos de mercado para a skin '10 Year Birthday Sticker Capsule':
+- Preco Medio: 1.90 USD
+- Preco Minimo: 0.79 USD
+- Preco Maximo: 4.75 USD
+- Quantidade Vendida: 201 unidades.","Baseado nos dados fornecidos pela ferramenta, aqui estão as estatísticas de mercado para a skin '10 Year Birthday Sticker Capsule':
+
+- **Preço Médio:** 1.90 USD
+- **Preço Mínimo:** 0.79 USD
+- **Preço Máximo:** 4.75 USD
+- **Quantidade Vendida:** 201 unidades",25.9608,True,0.79,4.75,1.9,201,USD
+2026-04-13T23:13:19+00:00,qwen2.5:3b,0.0166,,q2,1st Lieutenant Farlow | SWAT,"Usa apenas SQL/PostgreSQL para a skin '1st Lieutenant Farlow | SWAT' e devolve min, max, mean e quantidade vendida.",False,,,"Para obter os valores de mínimo (min), máximo (max), média (mean) e a quantidade vendida da skin '1st Lieutenant Farlow | SWAT', precisamos fazer uma consulta específica no banco de dados PostgreSQL que utiliza a função `consultar_estatisticas_skin`. No entanto, como não há detalhes sobre como essa função é implementada ou qual o formato dos resultados esperados, eu vou criar uma simulação desta consulta usando apenas SQL.
+
+Primeiro, vamos consultar os min, max e mean para estes dados. A quantidade vendida pode ser obtida de outra tabela que mantém os registros de vendas, se essa informação não está disponível diretamente na função `consultar_estatisticas_skin`.
+
+Assim seria uma simulação:
+
+```sql
+SELECT 
+    nome_skin AS skin_name,
+    MIN(preco) AS min_price,
+    MAX(preco) AS max_price,
+    AVG(qtd_vendida) AS mean_sales,
+    SUM(qtd_vendida) AS total_sold
+FROM 
+    produtos  -- Essa tabela simula os dados de preço e quantidade vendida associados à skin.
+WHERE 
+    nome_skin = '1st Lieutenant Farlow | SWAT'
+GROUP BY 
+    nome_skin;
+```
+
+Para continuar, precisamos fornecer mais detalhes sobre como a função `consultar_estatisticas_skin` está configurada no banco de dados. Por favor, forneça os detalhes necessários para realizar essa consulta.
+",31.9573,True,15.82,64.55,30.89,85,USD
+2026-04-13T23:13:32+00:00,qwen2.5:3b,0.0166,,q3,2020 RMR Challengers,"Para a skin '2020 RMR Challengers', responde so com dados exatos de SQL: preco minimo, maximo, medio e quantity sold.",True,{'nome_skin': '2020 RMR Challengers'},"Dados exatos de mercado para a skin '2020 RMR Challengers':
+- Preco Medio: 1.48 USD
+- Preco Minimo: 0.38 USD
+- Preco Maximo: 7.04 USD
+- Quantidade Vendida: 372 unidades.","Segue os dados exatos solicitados:
+
+- **Preço Mínimo**: 0.38 USD
+- **Preço Máximo**: 7.04 USD
+- **Preço Médio**: 1.48 USD
+- **Quantidade Vendida**: 372 unidades",13.0265,True,0.38,7.04,1.48,372,USD
+2026-04-13T23:13:32+00:00,phi3:mini,0.0129,registry.ollama.ai/library/phi3:mini does not support tools (status code: 400),q1,10 Year Birthday Sticker Capsule,"Quero dados exatos via SQL da skin '10 Year Birthday Sticker Capsule': min, max, mean e quantity sold.",False,,,,0.0,True,0.79,4.75,1.9,201,USD
+2026-04-13T23:13:32+00:00,phi3:mini,0.0129,registry.ollama.ai/library/phi3:mini does not support tools (status code: 400),q2,1st Lieutenant Farlow | SWAT,"Usa apenas SQL/PostgreSQL para a skin '1st Lieutenant Farlow | SWAT' e devolve min, max, mean e quantidade vendida.",False,,,,0.0,True,15.82,64.55,30.89,85,USD
+2026-04-13T23:13:32+00:00,phi3:mini,0.0129,registry.ollama.ai/library/phi3:mini does not support tools (status code: 400),q3,2020 RMR Challengers,"Para a skin '2020 RMR Challengers', responde so com dados exatos de SQL: preco minimo, maximo, medio e quantity sold.",False,,,,0.0,True,0.38,7.04,1.48,372,USD
+2026-04-13T23:13:32+00:00,gemma2:2b,0.0149,registry.ollama.ai/library/gemma2:2b does not support tools (status code: 400),q1,10 Year Birthday Sticker Capsule,"Quero dados exatos via SQL da skin '10 Year Birthday Sticker Capsule': min, max, mean e quantity sold.",False,,,,0.0,True,0.79,4.75,1.9,201,USD
+2026-04-13T23:13:32+00:00,gemma2:2b,0.0149,registry.ollama.ai/library/gemma2:2b does not support tools (status code: 400),q2,1st Lieutenant Farlow | SWAT,"Usa apenas SQL/PostgreSQL para a skin '1st Lieutenant Farlow | SWAT' e devolve min, max, mean e quantidade vendida.",False,,,,0.0,True,15.82,64.55,30.89,85,USD
+2026-04-13T23:13:33+00:00,gemma2:2b,0.0149,registry.ollama.ai/library/gemma2:2b does not support tools (status code: 400),q3,2020 RMR Challengers,"Para a skin '2020 RMR Challengers', responde so com dados exatos de SQL: preco minimo, maximo, medio e quantity sold.",False,,,,0.0,True,0.38,7.04,1.48,372,USD
+2026-04-13T23:13:45+00:00,qwen2.5:1.5b,0.0111,,q1,10 Year Birthday Sticker Capsule,"Quero dados exatos via SQL da skin '10 Year Birthday Sticker Capsule': min, max, mean e quantity sold.",False,,,"Para obter os dados exatos da skin '10 Year Birthday Sticker Capsule', precisarei de uma consulta direta ao banco de dados usando a ferramenta consultar_estatisticas_skin. Vou precisar das informações da skin para isso.
+
+Por favor, me forneça os detalhes sobre a skin solicitada:
+- Nome da skin
+- Data do lançamento (se disponível)
+- Ano de criação
+
+Com essas informações, eu posso construir a consulta SQL correta e obter o resultado exato que você está procurando.",12.9211,True,0.79,4.75,1.9,201,USD
+2026-04-13T23:13:57+00:00,qwen2.5:1.5b,0.0111,,q2,1st Lieutenant Farlow | SWAT,"Usa apenas SQL/PostgreSQL para a skin '1st Lieutenant Farlow | SWAT' e devolve min, max, mean e quantidade vendida.",False,,,"Para obter os valores mínimos (min), máximos (max), média (mean) e a quantidade de vendas do skin '1st Lieutenant Farlow | SWAT' utilizando SQL/PostgreSQL, você pode usar as seguintes consultas:
+
+```sql
+-- Cálculo da média (average)
+SELECT AVG(vendas_total) AS media_vendas FROM vendas WHERE nome_skin = '1st Lieutenant Farlow | SWAT';
+
+-- Consulta para obter o valor mínimo (min)
+SELECT MIN(vendas_total) AS minimo_vendas FROM vendas WHERE nome_skin = '1st Lieutenant Farlow | SWAT';
+
+-- Consulta para obter o valor máximo (max)
+SELECT MAX(vendas_total) AS maximo_vendas FROM vendas WHERE nome_skin = '1st Lieutenant Farlow | SWAT';
+
+-- Cálculo da quantidade de vendas
+SELECT COUNT(*) AS total_vendas FROM vendas WHERE nome_skin = '1st Lieutenant Farlow | SWAT';
+```
+
+Estas consultas retornarão os valores mínimos, máximos, média e a quantidade de vendas correspondentes para o skin especificado.",11.8429,True,15.82,64.55,30.89,85,USD
+2026-04-13T23:14:05+00:00,qwen2.5:1.5b,0.0111,,q3,2020 RMR Challengers,"Para a skin '2020 RMR Challengers', responde so com dados exatos de SQL: preco minimo, maximo, medio e quantity sold.",False,,,"I will proceed with your request to retrieve the required data for the '2020 RMR Challengers' skin in the given SQL format.
+
+Here is the query that you would need:
+
+```sql
+SELECT 
+    min(price) as min_price, 
+    max(price) as max_price, 
+    AVG(price) as avg_price, 
+    SUM(quantity_sold) as quantity_sold 
+FROM 
+    skins 
+WHERE 
+    name = '2020 RMR Challengers'
+```
+
+This query will retrieve the minimum price (`min_price`), maximum price (`max_price`), average price (`avg_price`), and total quantity sold (`quantity_sold`) for the skin named '2020 RMR Challengers' in the database.",7.9205,True,0.38,7.04,1.48,372,USD
+2026-04-13T23:14:05+00:00,tinyllama:1.1b,0.0145,registry.ollama.ai/library/tinyllama:1.1b does not support tools (status code: 400),q1,10 Year Birthday Sticker Capsule,"Quero dados exatos via SQL da skin '10 Year Birthday Sticker Capsule': min, max, mean e quantity sold.",False,,,,0.0,True,0.79,4.75,1.9,201,USD
+2026-04-13T23:14:05+00:00,tinyllama:1.1b,0.0145,registry.ollama.ai/library/tinyllama:1.1b does not support tools (status code: 400),q2,1st Lieutenant Farlow | SWAT,"Usa apenas SQL/PostgreSQL para a skin '1st Lieutenant Farlow | SWAT' e devolve min, max, mean e quantidade vendida.",False,,,,0.0,True,15.82,64.55,30.89,85,USD
+2026-04-13T23:14:06+00:00,tinyllama:1.1b,0.0145,registry.ollama.ai/library/tinyllama:1.1b does not support tools (status code: 400),q3,2020 RMR Challengers,"Para a skin '2020 RMR Challengers', responde so com dados exatos de SQL: preco minimo, maximo, medio e quantity sold.",False,,,,0.0,True,0.38,7.04,1.48,372,USD

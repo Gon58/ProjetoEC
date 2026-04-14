@@ -44,18 +44,25 @@ def main() -> None:
         skipped = 0
 
         for review in cursor:
-            review_id = str(review.get("review_id") or review.get("id") or "").strip()
-            text = str(review.get("review_text") or review.get("text") or "").strip()
+            review_id = str(
+                review.get("review_id")
+                or review.get("recommendationid")
+                or review.get("id")
+                or ""
+            ).strip()
+            text = str(review.get("review_text") or review.get("review") or review.get("text") or "").strip()
             if not review_id or not text:
                 skipped += 1
                 continue
+
+            author = review.get("author") if isinstance(review.get("author"), dict) else {}
 
             metadata = {
                 "source": "steam_reviews",
                 "timestamp_created": review.get("timestamp_created"),
                 "voted_up": review.get("voted_up"),
-                "author_playtime_forever": review.get("author_playtime_forever"),
-                "author_num_games_owned": review.get("author_num_games_owned"),
+                "author_playtime_forever": author.get("playtime_forever"),
+                "author_num_games_owned": author.get("num_games_owned"),
                 "is_market_related": review.get("is_market_related"),
             }
 
