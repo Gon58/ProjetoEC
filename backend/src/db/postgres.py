@@ -13,20 +13,23 @@ def _get_engine():
     return create_engine(POSTGRES_URL, echo=False)
 
 
-def fetch_skinport_skins(limit: int = 100) -> list[dict[str, Any]]:
+def fetch_skinport_skins(limit: int | None = None) -> list[dict[str, Any]]:
     """Fetch skin rows from PostgreSQL restricted to Skinport records."""
-    query = text("""
+    query = """
         SELECT id, name, currency, min_price, max_price, mean_price,
                median_price, quantity_sold, source
         FROM skin
         WHERE source = :source
-        LIMIT :limit
-    """)
+    """
+
+    params = {"source": "skinport"}
+
+    if limit is not None:
+        query += "\n        LIMIT :limit"
+        params["limit"] = limit
 
     with _get_engine().connect() as conn:
-        rows = conn.execute(
-            query, {"source": "skinport", "limit": limit}
-        ).mappings().all()
+        rows = conn.execute(text(query), params).mappings().all()
     return [dict(row) for row in rows]
 
 

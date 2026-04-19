@@ -1,6 +1,6 @@
 export default function SkinTable({ skins }) {
   return (
-    <div className="table-wrapper">
+    <div className="table-wrapper border border-slate-800/90 overflow-hidden">
       <table className="skins-table">
         <thead>
           <tr>
