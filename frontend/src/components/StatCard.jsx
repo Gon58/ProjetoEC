@@ -1,8 +1,10 @@
-export default function StatCard({ title, value }) {
+export default function StatCard({ title, value, className = "" }) {
   return (
-    <div className="stat-card">
-      <p className="stat-title">{title}</p>
-      <h3 className="stat-value">{value}</h3>
+    <div
+      className={`border border-[#1f2937] bg-[#17191A] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.18)] ${className}`}
+    >
+      <p className="mb-3 text-sm font-medium text-slate-400">{title}</p>
+      <h3 className="text-2xl font-semibold text-slate-100">{value}</h3>
     </div>
   );
 }

@@ -128,14 +128,14 @@ def chat_endpoint(request: ChatRequest) -> JSONResponse:
 
 
 @router.get("/skins")
-def search_skins_endpoint(limit: int = 100) -> JSONResponse:
+def search_skins_endpoint(limit: int | None = None) -> JSONResponse:
     """
     Endpoint to get all skins for the web app.
 
-    Fetches skins from the relational database and returns 100 results.
+    Fetches skins from the relational database and returns all results unless a limit is provided.
 
     Args:
-        limit: Limit of results (default: 100).
+        limit: Optional limit of results.
     Returns:
         JSON with query results.
     """

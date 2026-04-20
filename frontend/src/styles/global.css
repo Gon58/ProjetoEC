@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 * {
   box-sizing: border-box;
 }
@@ -5,7 +7,7 @@
 body {
   margin: 0;
   font-family: Inter, Arial, sans-serif;
-  background: #0f172a;
+  background: #0D0E0E;
   color: #e2e8f0;
 }
 
@@ -15,74 +17,11 @@ button {
 
 .app-shell {
   min-height: 100vh;
-}
-
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 18px 32px;
-  background: #111827;
-  border-bottom: 1px solid #1f2937;
-}
-
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.navbar-brand h1 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.navbar-brand p {
-  margin: 2px 0 0;
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-
-.brand-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: #2563eb;
-  color: white;
-  font-weight: 700;
-}
-
-.navbar-links {
-  display: flex;
-  gap: 10px;
-}
-
-.nav-btn {
-  border: 1px solid #334155;
-  background: transparent;
-  color: #cbd5e1;
-  padding: 10px 16px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.nav-btn.active,
-.nav-btn:hover {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: white;
+  background: #0D0E0E;
 }
 
 .main-content {
-  max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 20px 48px;
 }
 
 .hero {
@@ -150,6 +89,11 @@ button {
   background: #2563eb;
   color: white;
   font-weight: 600;
+}
+
+.steam-auth-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
 }
 
 .secondary-btn {
@@ -236,17 +180,19 @@ button {
 
 .table-wrapper {
   overflow-x: auto;
+  background: #17191A;
 }
 
 .skins-table {
   width: 100%;
   border-collapse: collapse;
+  background: #17191A;
 }
 
 .skins-table th,
 .skins-table td {
   text-align: left;
-  padding: 14px 12px;
+  padding: 16px 14px;
   border-bottom: 1px solid #1f2937;
 }
 
@@ -254,10 +200,17 @@ button {
   color: #94a3b8;
   font-size: 0.9rem;
   font-weight: 600;
+  background: #17191A;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .skins-table td {
   color: #e5e7eb;
+}
+
+.skins-table tbody tr:hover {
+  background: rgba(14, 165, 233, 0.08);
 }
 
 .log-row-clickable {
@@ -363,9 +316,14 @@ button {
   }
 
   .navbar {
-    flex-direction: column;
-    gap: 14px;
-    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 18px;
+  }
+
+  .navbar-links {
+    width: 100%;
+    flex-wrap: wrap;
   }
 
   .logs-toolbar {
