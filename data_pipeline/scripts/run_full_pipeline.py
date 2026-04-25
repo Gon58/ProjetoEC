@@ -16,10 +16,11 @@ def main():
     scripts_dir = base_dir / "scripts"
 
     steps = [
-        (scripts_dir / "run_kaggle_processing.py", "Process Kaggle dataset"),
+        (scripts_dir / "run_kaggle_processing.py",  "Process Kaggle dataset"),
         (scripts_dir / "run_skinport_ingestion.py", "Fetch and normalize Skinport data"),
-        (scripts_dir / "run_merge.py", "Merge Kaggle and Skinport datasets"),
-        (scripts_dir / "run_load_postgres.py", "Load merged data into PostgreSQL"),
+        (scripts_dir / "run_steam_market.py",       "Scrape Steam Market"),  # <-- novo
+        (scripts_dir / "run_merge.py",              "Merge all datasets"),
+        (scripts_dir / "run_load_postgres.py",      "Load merged data into PostgreSQL"),
     ]
 
     for script, label in steps:
