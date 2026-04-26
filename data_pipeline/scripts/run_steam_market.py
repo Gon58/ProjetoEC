@@ -36,9 +36,13 @@ DELAY_MAX = 3.0
 RATE_LIMIT_WAIT = 60  # segundos
 
 # Ficheiros de output
-OUTPUT_JSON = "cs2_market_prices.json"
-OUTPUT_CSV  = "cs2_market_prices.csv"
-PROGRESS_FILE = "scraper_progress.json"
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+OUTPUT_DIR = BASE_DIR / "data" / "processed"
+OUTPUT_JSON = OUTPUT_DIR / "steam_market_prices.json"
+OUTPUT_CSV  = OUTPUT_DIR / "steam_market_prices.csv"
+PROGRESS_FILE = BASE_DIR / "data" / "raw" / "scraper_progress.json"
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
 
@@ -179,6 +183,7 @@ def save_progress(progress: dict):
 
 def save_outputs(all_items: dict):
     items_list = list(all_items.values())
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
         json.dump(items_list, f, ensure_ascii=False, indent=2)
