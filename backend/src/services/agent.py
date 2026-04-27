@@ -158,7 +158,7 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
                     resultado_bruto = funcao_python(**argumentos)
                 except Exception as exc:
                     resultado_bruto = (
-                        "Nao foi possivel concluir a ferramenta neste momento; "
+                        "Nao foi possível concluir a ferramenta neste momento; "
                         "responde com os dados disponiveis sem inventar valores."
                     )
                     _log_event(

@@ -28,7 +28,7 @@ jobs:
           echo "CHROMA_HOST=ec-project-chroma" >> .env
           echo "CHROMA_PORT=8000" >> .env
           echo "OLLAMA_BASE_URL=http://ec-project-ollama:11434" >> .env
-          echo "LLM_MODEL=llama3.1" >> .env
+          echo "LLM_MODEL=qwen2.5:7b" >> .env
 
       - name: Create mock .env file
         run: |
@@ -42,7 +42,7 @@ jobs:
           echo "CHROMA_HOST=ec-project-chroma" >> .env
           echo "CHROMA_PORT=8000" >> .env
           echo "OLLAMA_BASE_URL=http://ec-project-ollama:11434" >> .env
-          echo "LLM_MODEL=llama3.1" >> .env
+          echo "LLM_MODEL=qwen2.5:7b" >> .env
 
       - name: Build and run tests
         run: |

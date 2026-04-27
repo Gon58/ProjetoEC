@@ -36,7 +36,6 @@ DELAY_MAX = 3.0
 RATE_LIMIT_WAIT = 60  # segundos
 
 # Ficheiros de output
-from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = BASE_DIR / "data" / "processed"
@@ -111,7 +110,7 @@ SESSION.headers.update({
 
 
 def build_url(start: int, category_params: dict) -> tuple[str, dict]:
-    base = f"https://steamcommunity.com/market/search/render/"
+    base = "https://steamcommunity.com/market/search/render/"
     params = {
         "appid": APP_ID,
         "norender": 1,

@@ -3,7 +3,7 @@
 ## Semana 14
 
 - [ ] Corrigir bugs (logs)
-- [ ] Melhorar UX
+- [x] Melhorar UX
 - [ ] Rever código gerado por AI
 
 ---
@@ -12,7 +12,7 @@
 
 - [ ] Escrever relatório técnico
 - [ ] Preparar apresentação
-- [ ] Code freeze
+- [x] Code freeze
 
 ---
 
