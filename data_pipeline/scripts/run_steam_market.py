@@ -18,6 +18,8 @@ import json
 import time
 import csv
 import random
+import sys
+import io
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -44,9 +46,6 @@ OUTPUT_CSV  = OUTPUT_DIR / "steam_market_prices.csv"
 PROGRESS_FILE = BASE_DIR / "data" / "raw" / "scraper_progress.json"
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
-
-import sys
-import io
 
 logging.basicConfig(
     level=logging.INFO,
