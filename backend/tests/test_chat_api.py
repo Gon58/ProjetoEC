@@ -35,6 +35,6 @@ class TestChatAPI(unittest.TestCase):
         self.assertEqual(body["message"], payload["message"])
         self.assertEqual(
             body["answer"],
-            "Nao foi possivel processar a mensagem neste momento.",
+            "Nao foi possível processar a mensagem neste momento.",
         )
         mock_chat.assert_called_once_with(payload["message"])

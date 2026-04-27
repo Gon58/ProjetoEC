@@ -2,9 +2,9 @@
 
 ## Semana 10 - Chat UI
 
-- [ ] Criar interface (Streamlit/Gradio)
-- [ ] Conectar frontend à API
-- [ ] Testar interação com backend
+- [x] Criar interface (Streamlit/Gradio)
+- [x] Conectar frontend à API
+- [x] Testar interação com backend
 - User Stories: US02, US08
 
 ---
@@ -19,7 +19,7 @@
 
 ## Semana 12 - Interatividade
 
-- [ ] Integrar chat com dashboard
+- [x] Integrar chat com dashboard
 - [ ] Implementar feedback visual (loading, etc)
 - User Stories: US03
 

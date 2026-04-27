@@ -115,7 +115,7 @@ def main() -> None:
                     nome_skin=extracted_skin,
                 )
             else:
-                answer = "Nao foi possivel extrair nome de skin para rota SQL forcada."
+                answer = "Nao foi possível extrair nome de skin para rota SQL forcada."
         else:
             client = agent_module.get_ollama_client()
             system_prompt = agent_module.load_system_prompt()

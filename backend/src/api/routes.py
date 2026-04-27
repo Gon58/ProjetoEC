@@ -122,7 +122,7 @@ def chat_endpoint(request: ChatRequest) -> JSONResponse:
         payload = {
             "status": "error",
             "message": request.message,
-            "answer": "Nao foi possivel processar a mensagem neste momento.",
+            "answer": "Nao foi possível processar a mensagem neste momento.",
         }
         return JSONResponse(content=payload, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

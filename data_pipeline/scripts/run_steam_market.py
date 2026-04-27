@@ -18,6 +18,8 @@ import json
 import time
 import csv
 import random
+import sys
+import io
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,7 +38,6 @@ DELAY_MAX = 3.0
 RATE_LIMIT_WAIT = 60  # segundos
 
 # Ficheiros de output
-from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = BASE_DIR / "data" / "processed"
@@ -45,9 +46,6 @@ OUTPUT_CSV  = OUTPUT_DIR / "steam_market_prices.csv"
 PROGRESS_FILE = BASE_DIR / "data" / "raw" / "scraper_progress.json"
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
-
-import sys
-import io
 
 logging.basicConfig(
     level=logging.INFO,
@@ -111,7 +109,7 @@ SESSION.headers.update({
 
 
 def build_url(start: int, category_params: dict) -> tuple[str, dict]:
-    base = f"https://steamcommunity.com/market/search/render/"
+    base = "https://steamcommunity.com/market/search/render/"
     params = {
         "appid": APP_ID,
         "norender": 1,
