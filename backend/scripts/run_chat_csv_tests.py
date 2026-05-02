@@ -44,8 +44,8 @@ from __future__ import annotations
 import argparse
 import csv
 import re
-import threading
 import sys
+import threading
 import time
 from dataclasses import dataclass
 from io import StringIO
@@ -166,7 +166,11 @@ def _load_rows(input_path: Path) -> list[dict[str, str]]:
 
     rows: list[dict[str, str]] = []
     for raw_row in reader:
-        normalized = {key.strip().lower(): (value or "").strip() for key, value in raw_row.items() if key}
+        normalized = {
+            key.strip().lower(): (value or "").strip()
+            for key, value in raw_row.items()
+            if key
+        }
         rows.append(normalized)
     return rows
 
@@ -375,7 +379,11 @@ def _write_results(output_path: Path, rows: list[dict[str, Any]]) -> None:
 def main() -> None:
     """Execute the CSV test run."""
     args = _build_parser().parse_args()
-    project_root = Path(args.project_root).resolve() if args.project_root else Path(__file__).resolve().parents[1]
+    project_root = (
+        Path(args.project_root).resolve()
+        if args.project_root
+        else Path(__file__).resolve().parents[1]
+    )
 
     input_path = _resolve_path(project_root, args.input)
     output_path = _resolve_path(project_root, args.output)
@@ -459,7 +467,12 @@ def main() -> None:
             else:
                 tool_source = "none"
         else:
-            tool_source = "observed" if observed_sequence else "inferred_from_text" if inferred_sequence else "none"
+            if observed_sequence:
+                tool_source = "observed"
+            elif inferred_sequence:
+                tool_source = "inferred_from_text"
+            else:
+                tool_source = "none"
 
         if observed_sequence:
             actual_sequence = observed_sequence
