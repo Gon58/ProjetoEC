@@ -41,16 +41,28 @@ def _extract_tool_call_from_content(content: str | None) -> dict[str, Any] | Non
     if not text:
         return None
 
-    try:
-        parsed = json.loads(text)
-    except Exception:
-        return None
+    candidates: list[str] = [text]
 
-    if isinstance(parsed, dict):
-        name = parsed.get("name")
-        arguments = parsed.get("arguments")
-        if isinstance(name, str) and isinstance(arguments, dict):
-            return {"name": name, "arguments": arguments}
+    # Some model responses wrap JSON in custom tags, e.g. <tool_call>...</tool_call>.
+    tagged_blocks = re.findall(r"<tool_call>(.*?)</tool_call>", text, flags=re.DOTALL)
+    candidates.extend(block.strip() for block in tagged_blocks if block.strip())
+
+    # If content includes additional prose, also try the first JSON object-like block.
+    json_like = re.search(r"\{[\s\S]*\}", text)
+    if json_like:
+        candidates.append(json_like.group(0).strip())
+
+    for candidate in candidates:
+        try:
+            parsed = json.loads(candidate)
+        except Exception:
+            continue
+
+        if isinstance(parsed, dict):
+            name = parsed.get("name")
+            arguments = parsed.get("arguments")
+            if isinstance(name, str) and isinstance(arguments, dict):
+                return {"name": name, "arguments": arguments}
 
     return None
 
