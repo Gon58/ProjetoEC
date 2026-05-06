@@ -1,5 +1,4 @@
 import os
-import time
 from typing import List, Dict, Any
 
 import httpx
@@ -79,7 +78,7 @@ def load_to_postgres(records: List[Dict[str, Any]]):
         conn.commit()
         logger.info(f"Inserted {len(records)} rows into Postgres")
         cur.close()
-    except Exception as exc:
+    except Exception:
         logger.exception("Postgres load failed")
         raise
     finally:
