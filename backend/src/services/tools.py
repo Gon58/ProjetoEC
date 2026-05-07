@@ -73,9 +73,9 @@ def pesquisar_opiniao_comunidade(topico: str) -> str:
     from src.db.vectorial import search_documents
 
     textos = []
-    
-    # Tenta Reddit primeiro
-    for collection_name in ["reddit_posts", RAG_COLLECTION_NAME]:
+
+    # Busca posts e comentarios do Reddit, depois Steam.
+    for collection_name in ["reddit_posts", "reddit_comments", RAG_COLLECTION_NAME]:
         try:
             resultado = search_documents(
                 query=topico, 

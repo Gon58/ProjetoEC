@@ -109,6 +109,8 @@ services:
       - MONGO_DB=ec_project
       - CHROMA_HOST=ec-project-chroma
       - CHROMA_PORT=8000
+    env_file:
+      - .env
 
   ec-project-backend-tests:
     build:

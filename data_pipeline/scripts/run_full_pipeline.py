@@ -1,6 +1,7 @@
 from pathlib import Path
 import subprocess
 import sys
+import os
 
 
 def run_step(script_path: Path, label: str) -> None:
@@ -14,6 +15,8 @@ def run_step(script_path: Path, label: str) -> None:
 def main():
     base_dir = Path(__file__).resolve().parents[1]
     scripts_dir = base_dir / "scripts"
+    run_reddit_ingestion = os.getenv("RUN_REDDIT_INGESTION", "false").strip().lower() in {"1", "true", "yes", "on"}
+    run_reddit_vector_indexing = os.getenv("RUN_REDDIT_VECTOR_INDEXING", "false").strip().lower() in {"1", "true", "yes", "on"}
 
     steps = [
         (scripts_dir / "run_kaggle_processing.py",  "Process Kaggle dataset"),
@@ -22,6 +25,16 @@ def main():
         (scripts_dir / "run_merge.py",              "Merge all datasets"),
         (scripts_dir / "run_load_postgres.py",      "Load merged data into PostgreSQL"),
     ]
+
+    if run_reddit_ingestion:
+        steps.append(
+            (scripts_dir / "run_reddit_ingestion.py", "Fetch Reddit posts into MongoDB")
+        )
+
+    if run_reddit_vector_indexing:
+        steps.append(
+            (scripts_dir / "run_reddit_vector_indexing.py", "Index Reddit discussions into ChromaDB")
+        )
 
     for script, label in steps:
         run_step(script, label)
