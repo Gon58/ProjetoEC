@@ -14,16 +14,14 @@ def _get_engine():
 
 
 def fetch_skinport_skins(limit: int | None = None) -> list[dict[str, Any]]:
-    """Fetch skin rows from PostgreSQL restricted to Skinport records."""
+    """Fetch all skin rows from PostgreSQL (all sources)."""
     query = """
         SELECT id, name, currency, min_price, max_price, mean_price,
                median_price, quantity_sold, source
         FROM skin
-        WHERE source = :source
+        ORDER BY mean_price DESC
     """
-
-    params = {"source": "skinport"}
-
+    params: dict[str, Any] = {}
     if limit is not None:
         query += "\n        LIMIT :limit"
         params["limit"] = limit
@@ -31,6 +29,49 @@ def fetch_skinport_skins(limit: int | None = None) -> list[dict[str, Any]]:
     with _get_engine().connect() as conn:
         rows = conn.execute(text(query), params).mappings().all()
     return [dict(row) for row in rows]
+
+
+def fetch_steam_market_skins_for_browse() -> list[dict[str, Any]]:
+    """Return all Steam Market skins that have price history (minimal fields for the browse panel)."""
+    query = text("""
+        SELECT DISTINCT ON (s.id) s.id, s.name, s.mean_price, s.quantity_sold
+        FROM skin s
+        INNER JOIN skin_price_history sph ON sph.skin_id = s.id
+        ORDER BY s.id, s.mean_price DESC
+    """)
+    with _get_engine().connect() as conn:
+        try:
+            rows = conn.execute(query).mappings().all()
+        except Exception:
+            return []
+    return [dict(row) for row in rows]
+
+
+def search_skins(q: str, limit: int = 10) -> list[dict[str, Any]]:
+    """Search skins by name — only returns skins that have price history."""
+    query = text("""
+        SELECT DISTINCT ON (s.id)
+               s.id, s.name, s.currency, s.min_price, s.max_price, s.mean_price,
+               s.median_price, s.quantity_sold, s.source
+        FROM skin s
+        INNER JOIN skin_price_history sph ON sph.skin_id = s.id
+        WHERE LOWER(s.name) LIKE LOWER(:pattern)
+        ORDER BY s.id, s.mean_price DESC
+        LIMIT :limit
+    """)
+    with _get_engine().connect() as conn:
+        rows = conn.execute(query, {"pattern": f"%{q}%", "limit": limit}).mappings().all()
+    return [dict(row) for row in rows]
+
+
+def fetch_history_skin_count() -> int:
+    """Return the number of distinct skins that have price history."""
+    query = text("SELECT COUNT(DISTINCT skin_id) FROM skin_price_history")
+    with _get_engine().connect() as conn:
+        try:
+            return int(conn.execute(query).scalar_one())
+        except Exception:
+            return 0
 
 
 def fetch_skinport_skin_by_name(name: str) -> dict[str, Any] | None:
@@ -208,6 +249,98 @@ def fetch_child_ingestion_logs(
             return [], 0
 
     return [dict(row) for row in rows], total_items
+
+
+def fetch_latest_data_timestamp() -> str | None:
+    """Return the most recent recorded_at from skin_price_history, or last_updated from skin."""
+    query = text("""
+        SELECT COALESCE(
+            (SELECT MAX(recorded_at) FROM skin_price_history),
+            (SELECT MAX(last_updated) FROM skin WHERE source = 'skinport')
+        ) AS ts
+    """)
+    with _get_engine().connect() as conn:
+        try:
+            row = conn.execute(query).one_or_none()
+        except Exception:
+            return None
+    if row is None or row.ts is None:
+        return None
+    dt = row.ts
+    months = [
+        "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+        "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+    ]
+    return f"{dt.day} de {months[dt.month - 1]} de {dt.year}, às {dt.strftime('%H:%M')}"
+
+
+def fetch_price_history_for_top_skins(limit: int = 5, days: int = 30) -> list[dict[str, Any]]:
+    """Return the price history of the top N most expensive skins that have history."""
+    query = text("""
+        WITH skins_with_history AS (
+            SELECT DISTINCT sph.skin_id, s.mean_price
+            FROM skin_price_history sph
+            JOIN skin s ON s.id = sph.skin_id
+            WHERE s.mean_price > 0
+        ),
+        top_skins AS (
+            SELECT skin_id AS id
+            FROM skins_with_history
+            ORDER BY mean_price DESC
+            LIMIT :limit
+        )
+        SELECT
+            ts.id AS skin_id,
+            sph.skin_name,
+            to_char(sph.recorded_at, 'YYYY-MM-DD') AS date,
+            sph.mean_price
+        FROM top_skins ts
+        JOIN skin_price_history sph ON sph.skin_id = ts.id
+        WHERE sph.recorded_at >= NOW() - (:days || ' days')::INTERVAL
+        ORDER BY ts.id, sph.recorded_at
+    """)
+    with _get_engine().connect() as conn:
+        try:
+            rows = conn.execute(query, {"limit": limit, "days": days}).mappings().all()
+        except Exception:
+            return []
+
+    grouped: dict[int, dict[str, Any]] = {}
+    for row in rows:
+        sid = row["skin_id"]
+        if sid not in grouped:
+            grouped[sid] = {"skin_id": sid, "skin_name": row["skin_name"], "history": []}
+        grouped[sid]["history"].append({"date": row["date"], "mean_price": float(row["mean_price"] or 0)})
+    return list(grouped.values())
+
+
+def fetch_skin_price_history_by_id(skin_id: int, days: int = 30) -> list[dict[str, Any]]:
+    """Return daily price history for a single skin."""
+    query = text("""
+        SELECT
+            to_char(recorded_at, 'YYYY-MM-DD') AS date,
+            mean_price,
+            min_price,
+            max_price
+        FROM skin_price_history
+        WHERE skin_id = :skin_id
+          AND recorded_at >= NOW() - (:days || ' days')::INTERVAL
+        ORDER BY recorded_at
+    """)
+    with _get_engine().connect() as conn:
+        try:
+            rows = conn.execute(query, {"skin_id": skin_id, "days": days}).mappings().all()
+        except Exception:
+            return []
+    return [
+        {
+            "date": r["date"],
+            "mean_price": float(r["mean_price"] or 0),
+            "min_price": float(r["min_price"] or 0),
+            "max_price": float(r["max_price"] or 0),
+        }
+        for r in rows
+    ]
 
 
 def fetch_ingestion_log_by_id(log_id: int) -> dict[str, Any] | None:

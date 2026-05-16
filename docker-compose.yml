@@ -5,7 +5,7 @@ services:
       dockerfile: backend/Dockerfile
     container_name: ec-project-backend
     volumes:
-      - ./backend:/app/backend
+      - ./backend/src:/app/src
     ports:
       - "8080:8080"
     environment:
@@ -176,7 +176,7 @@ services:
       - MONGO_PORT=27017
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-    command: ["bash","-lc","prefect work-pool create local-pool --type process || true; prefect worker start --pool local-pool --name local-worker"]
+    command: ["bash","-lc","prefect work-pool create local-pool --type process || true; python /flows/deploy.py || true; prefect worker start --pool local-pool --name local-worker"]
     depends_on:
       ec-project-prefect-server:
         condition: service_healthy
