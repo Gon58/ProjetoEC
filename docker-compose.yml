@@ -139,6 +139,47 @@ services:
       - OLLAMA_BASE_URL=http://ec-project-ollama:11434
       - EMBEDDING_MODEL=nomic-embed-text
     tty: true
+  
+  ec-project-prefect-server:
+    image: prefecthq/prefect:3-latest
+    container_name: ec-project-prefect-server
+    environment:
+      - PREFECT_UI_API_URL=http://localhost:4200/api
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./flows:/flows:ro
+    command: ["bash", "-lc", "prefect server start --host 0.0.0.0"]
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://localhost:4200/api/health').status == 200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      - ec-project-postgres
+      - ec-project-mongo
+
+  ec-project-prefect-worker:
+    build:
+      context: ./flows
+      dockerfile: Dockerfile
+    image: ec-project-prefect-worker:latest
+    container_name: ec-project-prefect-worker
+    volumes:
+      - ./flows:/flows
+      - ./data_pipeline:/data_pipeline
+    environment:
+      - PREFECT_API_URL=http://ec-project-prefect-server:4200/api
+      - POSTGRES_HOST=ec-project-postgres
+      - POSTGRES_PORT=5432
+      - MONGO_HOST=ec-project-mongo
+      - MONGO_PORT=27017
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    command: ["bash","-lc","prefect work-pool create local-pool --type process || true; prefect worker start --pool local-pool --name local-worker"]
+    depends_on:
+      ec-project-prefect-server:
+        condition: service_healthy
 
 volumes:
   ec_project_pgdata:
