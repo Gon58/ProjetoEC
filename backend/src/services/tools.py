@@ -24,7 +24,8 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
                 query = """
                     SELECT s.min_price, s.max_price, s.mean_price, s.quantity_sold,
                            s.currency, s.last_updated,
-                           (SELECT MAX(recorded_at) FROM skin_price_history WHERE skin_id = s.id) AS latest_record
+                           (SELECT MAX(recorded_at) FROM skin_price_history
+                            WHERE skin_id = s.id) AS latest_record
                     FROM skin s
                     WHERE s.name = %s
                     LIMIT 1
@@ -40,7 +41,8 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
                         "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
                     ]
                     ts_str = (
-                        f"{ts.day} de {months[ts.month - 1]} de {ts.year}, às {ts.strftime('%H:%M')}"
+                        f"{ts.day} de {months[ts.month - 1]} de {ts.year},"
+                        f" às {ts.strftime('%H:%M')}"
                         if ts else "data desconhecida"
                     )
                     template = get_prompt(

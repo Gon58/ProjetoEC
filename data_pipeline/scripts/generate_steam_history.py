@@ -171,7 +171,7 @@ def main(force: bool = False) -> None:
             writer.writerows(batch_csv)
             total_written += len(batch_db)
 
-    print(f"\nDone.")
+    print("\nDone.")
     print(f"  {total_written:,} history rows inserted into PostgreSQL.")
     print(f"  CSV saved to: {OUTPUT_CSV}")
 

@@ -136,7 +136,7 @@ def chat_endpoint(request: ChatRequest) -> JSONResponse:
 
 
 @router.get("/skins")
-def search_skins_endpoint(limit: int | None = None) -> JSONResponse:
+def get_all_skins_endpoint(limit: int | None = None) -> JSONResponse:
     """
     Endpoint to get all skins for the web app.
 
@@ -212,7 +212,10 @@ def get_price_history(limit: int = 5, days: int = 30) -> JSONResponse:
         result = fetch_price_history_for_top_skins(limit=limit, days=days)
         return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.get("/skins/steam-market")
@@ -222,7 +225,10 @@ def get_steam_market_skins() -> JSONResponse:
         result = fetch_steam_market_skins_for_browse()
         return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.get("/skins/history-count")
@@ -232,19 +238,25 @@ def get_history_skin_count() -> JSONResponse:
         count = fetch_history_skin_count()
         return JSONResponse(content={"count": count}, status_code=status.HTTP_200_OK)
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.get("/skins/search")
-def search_skins_endpoint(q: str = "", limit: int = 10) -> JSONResponse:
-    """Search skins by name across all sources."""
+def search_skins_by_name(q: str = "", limit: int = 10) -> JSONResponse:
+    """Search skins by name — only returns skins with price history."""
     if not q or len(q.strip()) < 2:
         return JSONResponse(content=[], status_code=status.HTTP_200_OK)
     try:
         result = search_skins(q=q.strip(), limit=limit)
         return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.get("/skins/{skin_id}/history")
@@ -259,11 +271,16 @@ def get_skin_history(skin_id: int, days: int = 30) -> JSONResponse:
     try:
         result = fetch_skin_price_history_by_id(skin_id=skin_id, days=days)
         if not result:
-            return JSONResponse(content={"error": "No history found for this skin"},
-                                status_code=status.HTTP_404_NOT_FOUND)
+            return JSONResponse(
+                content={"error": "No history found for this skin"},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
         return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.get("/skins/most-expensive")

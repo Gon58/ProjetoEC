@@ -32,7 +32,7 @@ def fetch_skinport_skins(limit: int | None = None) -> list[dict[str, Any]]:
 
 
 def fetch_steam_market_skins_for_browse() -> list[dict[str, Any]]:
-    """Return all Steam Market skins that have price history (minimal fields for the browse panel)."""
+    """Return all Steam Market skins that have price history (minimal fields for browse panel)."""
     query = text("""
         SELECT DISTINCT ON (s.id) s.id, s.name, s.mean_price, s.quantity_sold
         FROM skin s
@@ -310,7 +310,9 @@ def fetch_price_history_for_top_skins(limit: int = 5, days: int = 30) -> list[di
         sid = row["skin_id"]
         if sid not in grouped:
             grouped[sid] = {"skin_id": sid, "skin_name": row["skin_name"], "history": []}
-        grouped[sid]["history"].append({"date": row["date"], "mean_price": float(row["mean_price"] or 0)})
+        grouped[sid]["history"].append(
+            {"date": row["date"], "mean_price": float(row["mean_price"] or 0)}
+        )
     return list(grouped.values())
 
 
