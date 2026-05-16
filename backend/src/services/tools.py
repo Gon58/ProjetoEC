@@ -69,21 +69,32 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
 
 # FERRAMENTA 2: A ponte para o RAG (Textos e Opiniões)
 def pesquisar_opiniao_comunidade(topico: str) -> str:
-    """Searches community context through vector retrieval with graceful empty fallback."""
-    # Função que chama a busca vetorial no ChromaDB para obter
-    # opiniões relevantes do Reddit ou fóruns.
+    """Searches community context from Reddit and Steam reviews."""
     from src.db.vectorial import search_documents
 
-    resultado = search_documents(query=topico, collection_name=RAG_COLLECTION_NAME, n_results=3)
-    if resultado["status"] == "success" and resultado.get("results"):
-        # Junta todos os textos encontrados para o LLM ler
-        textos = [res["text"] for res in resultado["results"]]
+    textos = []
+
+    # Busca posts e comentarios do Reddit, depois Steam.
+    for collection_name in ["reddit_posts", "reddit_comments", RAG_COLLECTION_NAME]:
+        try:
+            resultado = search_documents(
+                query=topico, 
+                collection_name=collection_name, 
+                n_results=3
+            )
+            if resultado.get("status") == "success" and resultado.get("results"):
+                textos.extend([res["text"] for res in resultado["results"]])
+        except Exception as e:
+            print(f"Erro ao buscar em {collection_name}: {e}")
+            continue
+    
+    if textos:
         prefix = get_prompt(
             "tools.pesquisar_opiniao_comunidade.responses.success_prefix",
             "Opinioes da comunidade: ",
         )
-        return prefix + " | ".join(textos)
-
+        return prefix + " | ".join(textos[:5])
+    
     return get_prompt(
         "tools.pesquisar_opiniao_comunidade.responses.not_found",
         "Nao encontrei opinioes relevantes.",
