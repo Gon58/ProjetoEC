@@ -102,7 +102,8 @@ tools:
         - Preco Medio: {mean_p} {moeda}
         - Preco Minimo: {min_p} {moeda}
         - Preco Maximo: {max_p} {moeda}
-        - Quantidade Vendida: {qtd} unidades.
+        - Quantidade Vendida: {qtd} unidades
+        - Ultima Atualizacao: {data_formatada}.
       not_found: "Nao encontrei dados de mercado exatos para a skin '{nome_skin}' na base de dados SQL."
 
   pesquisar_opiniao_comunidade:

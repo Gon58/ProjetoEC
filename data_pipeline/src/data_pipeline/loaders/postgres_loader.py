@@ -1,9 +1,10 @@
 import csv
 import os
 
-from sqlalchemy import Column, Integer, Numeric, String, create_engine, text
+from sqlalchemy import Column, Integer, Numeric, String, DateTime, create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
+from sqlalchemy.sql import func
 
 from ..core.utils import to_decimal_2
 
@@ -26,6 +27,7 @@ class Skin(Base):
     median_price = Column(Numeric(10, 2))
     quantity_sold = Column(Integer)
     source = Column(String)
+    ingestion_timestamp = Column(DateTime, default=func.now())
 
 
 def create_engine_and_session() -> Engine:
@@ -43,6 +45,7 @@ def create_tables(engine: Engine) -> None:
 
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE skin ADD COLUMN IF NOT EXISTS source VARCHAR"))
+        conn.execute(text("ALTER TABLE skin ADD COLUMN IF NOT EXISTS ingestion_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
         conn.execute(
             text(
                 """

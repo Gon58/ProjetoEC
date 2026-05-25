@@ -22,16 +22,28 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
         with psycopg.connect(postgres_url_limpo) as conn:
             with conn.cursor() as cur:
                 query = """
-                    SELECT min_price, max_price, mean_price, quantity_sold, currency 
+                    SELECT 
+                        min_price,
+                        max_price,
+                        mean_price,
+                        quantity_sold,
+                        currency,
+                        ingestion_timestamp 
                     FROM skin 
                     WHERE name = %s 
+                    ORDER BY ingestion_timestamp DESC NULLS LAST
                     LIMIT 1
                 """
                 cur.execute(query, (nome_skin,))
                 resultado = cur.fetchone()
 
                 if resultado:
-                    min_p, max_p, mean_p, qtd, moeda = resultado
+                    min_p, max_p, mean_p, qtd, moeda, timestamp = resultado
+                    if timestamp:
+                        data_formatada = timestamp.strftime("%d/%m/%Y às %H:%M")
+                    else:
+                        data_formatada = "data desconhecida"
+
                     template = get_prompt(
                         "tools.consultar_estatisticas_skin.responses.success",
                         (
@@ -39,7 +51,8 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
                             "- Preco Medio: {mean_p} {moeda}\n"
                             "- Preco Minimo: {min_p} {moeda}\n"
                             "- Preco Maximo: {max_p} {moeda}\n"
-                            "- Quantidade Vendida: {qtd} unidades."
+                            "- Quantidade Vendida: {qtd} unidades.\n"
+                            "- Data da Ultima Atualizacao: {data_formatada}"
                         ),
                     )
                     return template.format(
@@ -49,6 +62,7 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
                         max_p=max_p,
                         qtd=qtd,
                         moeda=moeda,
+                        data_formatada=data_formatada,
                     )
 
                 template = get_prompt(
