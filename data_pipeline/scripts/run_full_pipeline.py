@@ -2,7 +2,6 @@ from pathlib import Path
 import os
 import subprocess
 import sys
-import os
 
 
 def run_step(script_path: Path, label: str) -> None:

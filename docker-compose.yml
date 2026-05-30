@@ -4,12 +4,10 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: ec-project-backend
-    volumes:
-      - ./backend:/app/backend
     ports:
       - "8080:8080"
     environment:
-      - ENV=dev
+      - ENV=prod
       - POSTGRES_URL=postgresql+psycopg://${DB_USER}:${DB_PASSWORD}@ec-project-postgres:5432/ec_project
       - MONGO_HOST=ec-project-mongo
       - MONGO_PORT=27017
@@ -34,14 +32,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8080
     container_name: ec-project-frontend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     ports:
-      - "5173:5173"
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+      - "5173:80"
     depends_on:
       - ec-project-backend
 
