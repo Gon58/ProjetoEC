@@ -13,15 +13,32 @@ def main():
     output_file = base_dir / "data" / "processed" / "combined_data.csv"
 
     kaggle_df = pd.read_csv(kaggle_file)
-    skinport_df = pd.read_csv(skinport_file)
-    steam_df    = pd.read_csv(steam_file)
 
-    steam_df = steam_df.drop(columns=["scraped_at"], errors="ignore")
+    dfs = [kaggle_df]
+    counts = {"kaggle": len(kaggle_df), "skinport": 0, "steam": 0}
 
-    merged = pd.concat([skinport_df, kaggle_df, steam_df], ignore_index=True)
+    if skinport_file.exists():
+        skinport_df = pd.read_csv(skinport_file)
+        dfs.append(skinport_df)
+        counts["skinport"] = len(skinport_df)
+    else:
+        print("[WARN] skinport_items.csv not found — skipping Skinport data")
+
+    if steam_file.exists():
+        steam_df = pd.read_csv(steam_file)
+        steam_df = steam_df.drop(columns=["scraped_at"], errors="ignore")
+        dfs.append(steam_df)
+        counts["steam"] = len(steam_df)
+    else:
+        print("[WARN] steam_market_prices.csv not found — skipping Steam Market data")
+
+    merged = pd.concat(dfs, ignore_index=True)
     save_merged_data(merged, output_file)
 
-    print(f"Merged {len(kaggle_df)} kaggle + {len(skinport_df)} skinport rows into {len(merged)} rows")
+    print(
+        f"Merged {counts['kaggle']} kaggle + {counts['skinport']} skinport"
+        f" + {counts['steam']} steam rows → {len(merged)} total rows"
+    )
 
 
 if __name__ == "__main__":

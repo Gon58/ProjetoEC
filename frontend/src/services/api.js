@@ -1,10 +1,9 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080"
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_URL,
   withCredentials: true,
 });
 
@@ -21,19 +20,37 @@ export async function getCurrentUser() {
 export async function chatWithAgent(message) {
   const res = await fetch(`${API_URL}/chat`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
-  })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.answer || "Erro ao comunicar com o agente");
+  return data;
+}
 
-  const data = await res.json()
+export async function getPriceHistory(limit = 5, days = 30) {
+  const response = await api.get("/skins/price-history", { params: { limit, days } });
+  return response.data;
+}
 
-  if (!res.ok) {
-    throw new Error(data?.answer || "Erro ao comunicar com o agente")
-  }
+export async function getSkinHistory(skinId, days = 30) {
+  const response = await api.get(`/skins/${skinId}/history`, { params: { days } });
+  return response.data;
+}
 
-  return data
+export async function searchSkins(q, limit = 10) {
+  const response = await api.get("/skins/search", { params: { q, limit } });
+  return response.data;
+}
+
+export async function getHistoryCount() {
+  const response = await api.get("/skins/history-count");
+  return response.data.count;
+}
+
+export async function getSteamMarketSkins() {
+  const response = await api.get("/skins/steam-market");
+  return response.data;
 }
 export async function getSteamProfile() {
   const response = await api.get("/auth/steam/profile");
@@ -65,7 +82,7 @@ export async function getLogs({ parentId = null, page = 1, pageSize = 5 } = {}) 
 }
 
 export function getSteamLoginUrl() {
-  return `${API_BASE_URL}/auth/steam/login`;
+  return `${API_URL}/auth/steam/login`;
 }
 
 export default api;
