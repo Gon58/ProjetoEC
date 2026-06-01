@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 
-def run_step(script_path: Path, label: str) -> None:
+def run_step(script_path: Path, label: str, optional: bool = False) -> None:
     print(f"\n=== {label} ===")
     base_dir = Path(__file__).resolve().parents[1]
     env = os.environ.copy()
@@ -14,7 +14,10 @@ def run_step(script_path: Path, label: str) -> None:
     result = subprocess.run([sys.executable, str(script_path)], check=False, cwd=str(base_dir), env=env)
 
     if result.returncode != 0:
-        raise SystemExit(f"Step failed: {label} ({script_path.name})")
+        if optional:
+            print(f"[WARN] Optional step failed (skipping): {label} ({script_path.name})")
+        else:
+            raise SystemExit(f"Step failed: {label} ({script_path.name})")
 
 
 def main():
@@ -24,25 +27,25 @@ def main():
     run_reddit_vector_indexing = os.getenv("RUN_REDDIT_VECTOR_INDEXING", "false").strip().lower() in {"1", "true", "yes", "on"}
 
     steps = [
-        (scripts_dir / "run_kaggle_processing.py",  "Process Kaggle dataset"),
-        (scripts_dir / "run_skinport_ingestion.py", "Fetch and normalize Skinport data"),
-        (scripts_dir / "run_steam_market.py",       "Scrape Steam Market"),
-        (scripts_dir / "run_merge.py",              "Merge all datasets"),
-        (scripts_dir / "run_load_postgres.py",      "Load merged data into PostgreSQL"),
+        (scripts_dir / "run_kaggle_processing.py",  "Process Kaggle dataset",              False),
+        (scripts_dir / "run_skinport_ingestion.py", "Fetch and normalize Skinport data",   True),
+        (scripts_dir / "run_steam_market.py",       "Scrape Steam Market",                 True),
+        (scripts_dir / "run_merge.py",              "Merge all datasets",                  False),
+        (scripts_dir / "run_load_postgres.py",      "Load merged data into PostgreSQL",    False),
     ]
 
     if run_reddit_ingestion:
         steps.append(
-            (scripts_dir / "run_reddit_ingestion.py", "Fetch Reddit posts into MongoDB")
+            (scripts_dir / "run_reddit_ingestion.py", "Fetch Reddit posts into MongoDB", True)
         )
 
     if run_reddit_vector_indexing:
         steps.append(
-            (scripts_dir / "run_reddit_vector_indexing.py", "Index Reddit discussions into ChromaDB")
+            (scripts_dir / "run_reddit_vector_indexing.py", "Index Reddit discussions into ChromaDB", True)
         )
 
-    for script, label in steps:
-        run_step(script, label)
+    for script, label, optional in steps:
+        run_step(script, label, optional=optional)
 
     print("\nFull pipeline completed successfully.")
 
