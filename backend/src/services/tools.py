@@ -21,7 +21,6 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
     try:
         with psycopg.connect(postgres_url_limpo) as conn:
             with conn.cursor() as cur:
-                # Usamos a query da branch main (que já suporta o histórico do teu colega)
                 query = """
                     SELECT s.min_price, s.max_price, s.mean_price, s.quantity_sold,
                            s.currency, s.last_updated,
@@ -38,7 +37,6 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
                     min_p, max_p, mean_p, qtd, moeda, last_upd, latest_rec = resultado
                     ts = latest_rec or last_upd
                     
-                    # O teu colega fez um array com os meses em PT, vamos manter que fica fixe!
                     months = [
                         "janeiro", "fevereiro", "março", "abril", "maio", "junho",
                         "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
