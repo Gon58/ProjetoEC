@@ -23,7 +23,12 @@ export default function ChatPage() {
       const response = await chatWithAgent(question);
       setMessages((prev) => [
         ...prev,
-        { id: Date.now() + 1, author: "assistant", text: response.answer },
+        {
+          id: Date.now() + 1,
+          author: "assistant",
+          text: response.answer,
+          dataTimestamp: response.data_timestamp || null,
+        },
       ]);
     } catch (error) {
       setMessages((prev) => [
@@ -93,6 +98,11 @@ export default function ChatPage() {
                       {isUser ? "Me" : "Teacher Bot Connor"}
                     </div>
                     <div className="leading-relaxed">{message.text}</div>
+                    {!isUser && message.dataTimestamp && (
+                      <div className="mt-2 border-t border-[#8c6d47]/30 pt-1 text-[0.65rem] text-[#41321E]/60">
+                        Dados de: {message.dataTimestamp}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

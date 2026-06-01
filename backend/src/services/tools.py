@@ -21,17 +21,34 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
     try:
         with psycopg.connect(postgres_url_limpo) as conn:
             with conn.cursor() as cur:
+                # Usamos a query da branch main (que já suporta o histórico do teu colega)
                 query = """
-                    SELECT min_price, max_price, mean_price, quantity_sold, currency 
-                    FROM skin 
-                    WHERE name = %s 
+                    SELECT s.min_price, s.max_price, s.mean_price, s.quantity_sold,
+                           s.currency, s.last_updated,
+                           (SELECT MAX(recorded_at) FROM skin_price_history
+                            WHERE skin_id = s.id) AS latest_record
+                    FROM skin s
+                    WHERE s.name = %s
                     LIMIT 1
                 """
                 cur.execute(query, (nome_skin,))
                 resultado = cur.fetchone()
 
                 if resultado:
-                    min_p, max_p, mean_p, qtd, moeda = resultado
+                    min_p, max_p, mean_p, qtd, moeda, last_upd, latest_rec = resultado
+                    ts = latest_rec or last_upd
+                    
+                    # O teu colega fez um array com os meses em PT, vamos manter que fica fixe!
+                    months = [
+                        "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+                        "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+                    ]
+                    ts_str = (
+                        f"{ts.day} de {months[ts.month - 1]} de {ts.year},"
+                        f" às {ts.strftime('%H:%M')}"
+                        if ts else "data desconhecida"
+                    )
+                    
                     template = get_prompt(
                         "tools.consultar_estatisticas_skin.responses.success",
                         (
@@ -39,7 +56,8 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
                             "- Preco Medio: {mean_p} {moeda}\n"
                             "- Preco Minimo: {min_p} {moeda}\n"
                             "- Preco Maximo: {max_p} {moeda}\n"
-                            "- Quantidade Vendida: {qtd} unidades."
+                            "- Quantidade Vendida: {qtd} unidades.\n"
+                            "- Dados lidos em: {ts_str}"
                         ),
                     )
                     return template.format(
@@ -49,6 +67,7 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
                         max_p=max_p,
                         qtd=qtd,
                         moeda=moeda,
+                        ts_str=ts_str,
                     )
 
                 template = get_prompt(
