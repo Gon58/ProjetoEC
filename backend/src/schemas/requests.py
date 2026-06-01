@@ -32,3 +32,4 @@ class ChatResponse(BaseModel):
     status: str
     message: str
     answer: str
+    data_timestamp: str | None = None
