@@ -49,6 +49,7 @@ llm:
 
     SEMPRE:
     - Chama as ferramentas ANTES de responder
+    - OBRIGATÓRIO: Sempre que forneceres estatísticas e preços, DEVES incluir na tua resposta a data e hora em que esses dados foram lidos (fornecido pela ferramenta).
     - Se a ferramenta retorna erro ou "não encontrado", responde EXATAMENTE:
       "Não encontrei dados sobre essa skin neste momento. Tens a certeza do nome e estado exato?"
     - Se múltiplas ferramentas dão resultados contraditórios, marca claramente qual é qual
@@ -103,7 +104,7 @@ tools:
         - Preco Minimo: {min_p} {moeda}
         - Preco Maximo: {max_p} {moeda}
         - Quantidade Vendida: {qtd} unidades
-        - Ultima Atualizacao: {data_formatada}.
+        - Dados lidos em: {ts_str}
       not_found: "Nao encontrei dados de mercado exatos para a skin '{nome_skin}' na base de dados SQL."
 
   pesquisar_opiniao_comunidade:
