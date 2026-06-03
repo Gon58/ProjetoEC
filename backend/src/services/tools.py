@@ -1,3 +1,6 @@
+import logging
+import re
+
 import psycopg
 from dotenv import load_dotenv
 
@@ -5,6 +8,29 @@ from ..core.config import POSTGRES_URL, RAG_COLLECTION_NAME
 from ..core.prompts import get_prompt
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+_WEAR_ALIASES = {
+    "fn": "Factory New",
+    "mw": "Minimal Wear",
+    "ft": "Field-Tested",
+    "ww": "Well-Worn",
+    "bs": "Battle-Scarred",
+}
+
+_WEAR_ALIAS_RE = re.compile(
+    r"\(\s*(" + "|".join(_WEAR_ALIASES) + r")\s*\)",
+    flags=re.IGNORECASE,
+)
+
+
+def _normalize_skin_name(nome_skin: str) -> str:
+    """Expands wear-state abbreviations so the SQL query finds the skin."""
+    return _WEAR_ALIAS_RE.sub(
+        lambda m: f"({_WEAR_ALIASES[m.group(1).lower()]})",
+        nome_skin,
+    )
 
 
 def consultar_estatisticas_skin(nome_skin: str) -> str:
@@ -16,22 +42,26 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
             "Erro tecnico: Variavel POSTGRES_URL nao esta configurada no .env",
         )
 
+    nome_skin = _normalize_skin_name(nome_skin)
     postgres_url_limpo = POSTGRES_URL.replace("postgresql+psycopg://", "postgresql://")
 
     try:
         with psycopg.connect(postgres_url_limpo) as conn:
             with conn.cursor() as cur:
-                query = """
+                base_select = """
                     SELECT s.min_price, s.max_price, s.mean_price, s.quantity_sold,
                            s.currency, s.last_updated,
                            (SELECT MAX(recorded_at) FROM skin_price_history
                             WHERE skin_id = s.id) AS latest_record
                     FROM skin s
-                    WHERE s.name = %s
-                    LIMIT 1
                 """
-                cur.execute(query, (nome_skin,))
+                # Try exact match first, then case-insensitive fallback.
+                cur.execute(base_select + "WHERE s.name = %s LIMIT 1", (nome_skin,))
                 resultado = cur.fetchone()
+                if not resultado:
+                    fallback = "WHERE LOWER(s.name) = LOWER(%s) LIMIT 1"
+                    cur.execute(base_select + fallback, (nome_skin,))
+                    resultado = cur.fetchone()
 
                 if resultado:
                     min_p, max_p, mean_p, qtd, moeda, last_upd, latest_rec = resultado
@@ -60,9 +90,9 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
                     )
                     return template.format(
                         nome_skin=nome_skin,
-                        mean_p=mean_p,
-                        min_p=min_p,
-                        max_p=max_p,
+                        mean_p=f"{mean_p:.2f}",
+                        min_p=f"{min_p:.2f}",
+                        max_p=f"{max_p:.2f}",
                         qtd=qtd,
                         moeda=moeda,
                         ts_str=ts_str,
@@ -84,10 +114,21 @@ def consultar_estatisticas_skin(nome_skin: str) -> str:
         return template.format(error=e)
 
 
-# FERRAMENTA 2: A ponte para o RAG (Textos e Opiniões)
 def pesquisar_opiniao_comunidade(topico: str) -> str:
-    """Searches community context from Reddit and Steam reviews."""
-    from src.db.vectorial import search_documents
+    """Searches community sentiment from Reddit posts, comments, and Steam reviews.
+
+    Queries three ChromaDB collections in order (reddit_posts, reddit_comments,
+    steam_reviews), deduplicates the retrieved snippets, and returns the top 5
+    as a pipe-separated string for the LLM to synthesise.
+
+    Args:
+        topico: A descriptive search phrase, e.g. "Vale a pena investir em Dragon Lore".
+
+    Returns:
+        A prefixed string of community opinion snippets, or a not-found message
+        if no relevant results were retrieved.
+    """
+    from ..db.vectorial import search_documents
 
     textos = []
 
@@ -102,15 +143,22 @@ def pesquisar_opiniao_comunidade(topico: str) -> str:
             if resultado.get("status") == "success" and resultado.get("results"):
                 textos.extend([res["text"] for res in resultado["results"]])
         except Exception as e:
-            print(f"Erro ao buscar em {collection_name}: {e}")
+            logger.warning("RAG search failed for collection %s: %s", collection_name, e)
             continue
     
     if textos:
+        seen: set[str] = set()
+        unique: list[str] = []
+        for t in textos:
+            if t not in seen:
+                seen.add(t)
+                unique.append(t)
+
         prefix = get_prompt(
             "tools.pesquisar_opiniao_comunidade.responses.success_prefix",
             "Opinioes da comunidade: ",
         )
-        return prefix + " | ".join(textos[:5])
+        return prefix + " | ".join(unique[:5])
     
     return get_prompt(
         "tools.pesquisar_opiniao_comunidade.responses.not_found",

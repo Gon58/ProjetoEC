@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { chatWithAgent } from "../services/api";
 
 const initialMessages = [
@@ -9,6 +9,11 @@ export default function ChatPage() {
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   async function handleSend() {
     const question = input.trim();
@@ -20,7 +25,14 @@ export default function ChatPage() {
     setIsSending(true);
 
     try {
-      const response = await chatWithAgent(question);
+      const history = messages
+        .filter((m) => m.id !== 1)   // exclude the static greeting
+        .slice(-10)                   // keep only the last 10 messages (5 turns)
+        .map((m) => ({
+          role: m.author === "user" ? "user" : "assistant",
+          content: m.text,
+        }));
+      const response = await chatWithAgent(question, history);
       setMessages((prev) => [
         ...prev,
         {
@@ -107,6 +119,7 @@ export default function ChatPage() {
                 </div>
               );
             })}
+            <div ref={bottomRef} />
           </div>
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">

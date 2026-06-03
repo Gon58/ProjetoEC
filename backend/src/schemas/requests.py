@@ -22,9 +22,16 @@ class SearchRequest(BaseModel):
     distance_threshold: float | None = Field(default=None, ge=0.0)
 
 
+class HistoryMessage(BaseModel):
+    """Uma mensagem individual no histórico de conversa (role + content)."""
+    role: str
+    content: str
+
+
 class ChatRequest(BaseModel):
     """Modelo para pedido de chat do frontend para o agente NeSy."""
     message: str
+    history: list[HistoryMessage] = []
 
 
 class PriceChangeRequest(BaseModel):

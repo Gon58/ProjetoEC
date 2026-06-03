@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def _log_event(event: str, payload: dict[str, Any]) -> None:
+    """Emits a structured JSON log entry for a named agent lifecycle event."""
     logger.info(json.dumps({"event": event, **payload}, ensure_ascii=False, default=str))
 
 
@@ -28,7 +29,20 @@ def _chat_with_timeout(client: Any, **kwargs: Any) -> dict[str, Any]:
                 f"Ollama chat request exceeded timeout of {OLLAMA_TIMEOUT_SECONDS} seconds"
             ) from exc
 
+# Qwen2.5 occasionally emits its internal chat-template tokens literally in
+# generated output.  Strip them before returning any text to callers.
+_SPECIAL_TOKEN_RE = re.compile(r"<\|[^|>]+\|>")
+
+
+def _clean_response(text: str) -> str:
+    """Strips model special tokens and normalises whitespace in LLM output."""
+    text = _SPECIAL_TOKEN_RE.sub("", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 def load_system_prompt() -> str:
+    """Loads the LLM system prompt from prompts.yaml (result is cached by get_prompt)."""
     return get_prompt("llm.system_prompt", "")
 
 
@@ -101,29 +115,47 @@ def _extract_skin_name_for_sql(mensagem_utilizador: str) -> str | None:
             return name if name else None
     return None
 
-def chat_nesy_agent(mensagem_utilizador: str) -> str:
-    """
-    Main NeSy router.
+def chat_nesy_agent(
+    mensagem_utilizador: str,
+    history: list[dict] | None = None,
+) -> str:
+    """Routes a user message through the NeSy agent pipeline and returns a response.
+
+    Decides whether to call the SQL tool (exact market data), the RAG tool
+    (community opinions), both, or neither, then synthesises a final answer
+    using the LLM.  Conversation history is prepended to the message list so
+    the model can resolve follow-up questions correctly.
+
+    Args:
+        mensagem_utilizador: The current user message (stripped before use).
+        history: Optional list of prior turns as {role, content} dicts,
+                 oldest first.  Sourced from the frontend chat state.
+
+    Returns:
+        A plain-text Portuguese response ready to display in the chat UI.
     """
 
-    print(f"A verificar/instalar o modelo {LLM_MODEL} no Docker...")
+    mensagem_utilizador = mensagem_utilizador.strip()
+    if not mensagem_utilizador:
+        return "Por favor, escreve uma pergunta."
+
     _log_event("agent_input", {"message": mensagem_utilizador, "model": LLM_MODEL})
     ensure_model(LLM_MODEL)
-    
+
     client = get_ollama_client()
     system_prompt = load_system_prompt()
-    
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": mensagem_utilizador}
-    ]
+
+    messages: list[dict[str, Any]] = [{"role": "system", "content": system_prompt}]
+    for turn in history or []:
+        messages.append({"role": turn["role"], "content": turn["content"]})
+    messages.append({"role": "user", "content": mensagem_utilizador})
     
     ferramentas_disponiveis = {
         "consultar_estatisticas_skin": consultar_estatisticas_skin,
         "pesquisar_opiniao_comunidade": pesquisar_opiniao_comunidade
     }
     
-    print(f"\n[Agente] A analisar a pergunta: '{mensagem_utilizador}'")
+    logger.info("agent_routing: %s", mensagem_utilizador)
 
     if _should_force_sql_route(mensagem_utilizador):
         extracted_skin = _extract_skin_name_for_sql(mensagem_utilizador)
@@ -133,8 +165,35 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
                 {"message": mensagem_utilizador, "skin": extracted_skin},
             )
             resultado_sql = consultar_estatisticas_skin(nome_skin=extracted_skin)
-            _log_event("agent_output", {"message": mensagem_utilizador, "output": resultado_sql})
-            return resultado_sql
+            _log_event(
+                "agent_tool_result",
+                {
+                    "tool": "consultar_estatisticas_skin",
+                    "result": str(resultado_sql),
+                    "message": mensagem_utilizador,
+                },
+            )
+            # Mirror the structure the normal path produces so the model
+            # sees: user → assistant(tool_calls) → tool → assistant(response)
+            messages.append({
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [{
+                    "function": {
+                        "name": "consultar_estatisticas_skin",
+                        "arguments": {"nome_skin": extracted_skin},
+                    }
+                }],
+            })
+            messages.append({
+                "role": "tool",
+                "content": str(resultado_sql),
+                "name": "consultar_estatisticas_skin",
+            })
+            resposta_final = _chat_with_timeout(client, model=LLM_MODEL, messages=messages)
+            resposta_texto = _clean_response(resposta_final["message"]["content"])
+            _log_event("agent_output", {"message": mensagem_utilizador, "output": resposta_texto})
+            return resposta_texto
     
     # router
     resposta_llm = _chat_with_timeout(
@@ -158,44 +217,46 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
             nome_da_tool = tool_call["function"]["name"]
             argumentos = tool_call["function"]["arguments"]
             
-            print(f"[Router] O LLM escolheu a rota: {nome_da_tool}")
             _log_event(
                 "agent_tool_selected",
                 {"tool": nome_da_tool, "arguments": argumentos, "message": mensagem_utilizador},
             )
             
             funcao_python = ferramentas_disponiveis.get(nome_da_tool)
-            if funcao_python:
-                try:
-                    resultado_bruto = funcao_python(**argumentos)
-                except Exception as exc:
-                    resultado_bruto = (
-                        "Nao foi possível concluir a ferramenta neste momento; "
-                        "responde com os dados disponiveis sem inventar valores."
-                    )
-                    _log_event(
-                        "agent_tool_error",
-                        {
-                            "tool": nome_da_tool,
-                            "error": str(exc),
-                            "message": mensagem_utilizador,
-                        },
-                    )
+            if not funcao_python:
+                logger.warning("agent unknown tool requested: %s", nome_da_tool)
+                continue
 
+            try:
+                resultado_bruto = funcao_python(**argumentos)
+            except Exception as exc:
+                resultado_bruto = (
+                    "Nao foi possível concluir a ferramenta neste momento; "
+                    "responde com os dados disponiveis sem inventar valores."
+                )
                 _log_event(
-                    "agent_tool_result",
+                    "agent_tool_error",
                     {
                         "tool": nome_da_tool,
-                        "result": str(resultado_bruto),
+                        "error": str(exc),
                         "message": mensagem_utilizador,
                     },
                 )
-                
-                messages.append({
-                    "role": "tool",
-                    "content": str(resultado_bruto),
-                    "name": nome_da_tool
-                })
+
+            _log_event(
+                "agent_tool_result",
+                {
+                    "tool": nome_da_tool,
+                    "result": str(resultado_bruto),
+                    "message": mensagem_utilizador,
+                },
+            )
+
+            messages.append({
+                "role": "tool",
+                "content": str(resultado_bruto),
+                "name": nome_da_tool,
+            })
                 
         # resposta final
         resposta_final = _chat_with_timeout(
@@ -203,10 +264,10 @@ def chat_nesy_agent(mensagem_utilizador: str) -> str:
             model=LLM_MODEL,
             messages=messages
         )
-        resposta_texto = resposta_final["message"]["content"]
+        resposta_texto = _clean_response(resposta_final["message"]["content"])
         _log_event("agent_output", {"message": mensagem_utilizador, "output": resposta_texto})
         return resposta_texto
-        
-    resposta_texto = resposta_llm["message"]["content"]
+
+    resposta_texto = _clean_response(resposta_llm["message"]["content"])
     _log_event("agent_output", {"message": mensagem_utilizador, "output": resposta_texto})
     return resposta_texto

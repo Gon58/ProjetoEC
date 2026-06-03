@@ -21,7 +21,7 @@ class TestChatAPI(unittest.TestCase):
         self.assertEqual(body["status"], "success")
         self.assertEqual(body["message"], payload["message"])
         self.assertEqual(body["answer"], "Resposta do agente")
-        mock_chat.assert_called_once_with(payload["message"])
+        mock_chat.assert_called_once_with(payload["message"], history=[])
 
     @patch("src.api.routes.chat_nesy_agent", side_effect=RuntimeError("falha LLM"))
     def test_chat_failure(self, mock_chat):
@@ -37,4 +37,4 @@ class TestChatAPI(unittest.TestCase):
             body["answer"],
             "Nao foi possível processar a mensagem neste momento.",
         )
-        mock_chat.assert_called_once_with(payload["message"])
+        mock_chat.assert_called_once_with(payload["message"], history=[])

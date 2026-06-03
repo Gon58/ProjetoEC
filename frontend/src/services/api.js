@@ -17,11 +17,11 @@ export async function getCurrentUser() {
   return response.data;
 }
 
-export async function chatWithAgent(message) {
+export async function chatWithAgent(message, history = []) {
   const res = await fetch(`${API_URL}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, history }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data?.answer || "Erro ao comunicar com o agente");
