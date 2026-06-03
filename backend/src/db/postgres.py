@@ -352,7 +352,8 @@ def fetch_price_changes_for_names(names: list[str], days: int = 14) -> dict[str,
     anchored to the most recent record in the table (not NOW()), so it stays correct
     even when the data is older than `days`. Names with no history are simply omitted.
 
-    Returns a dict keyed by skin_name: {"current_price", "start_price", "change_pct", "recorded_at"}.
+    Returns a dict keyed by skin_name:
+        ``{"current_price", "start_price", "change_pct", "recorded_at"}``.
     """
     if not names:
         return {}
