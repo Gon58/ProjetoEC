@@ -199,12 +199,19 @@ def test_chat_agent_force_sql_route(
     mock_ensure_model,
     mock_consultar,
 ):
+    client = MagicMock()
+    client.chat.return_value = {
+        "message": {"content": "Dados exatos de mercado para a skin 'AK-47 | Vulcan'."}
+    }
+    mock_get_client.return_value = client
+
     resposta = chat_nesy_agent(
         "I want SQL exact data only for skin AK-47 | Vulcan: min max mean quantity sold."
     )
 
     assert "Dados exatos de mercado" in resposta
     mock_consultar.assert_called_once_with(nome_skin="AK-47 | Vulcan")
+    client.chat.assert_called_once()
     mock_ensure_model.assert_called_once()
     mock_get_prompt.assert_called_once_with("llm.system_prompt", "")
     mock_get_client.assert_called_once()

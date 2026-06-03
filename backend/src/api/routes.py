@@ -124,7 +124,10 @@ def search_documents_endpoint(request: SearchRequest) -> JSONResponse:
 def chat_endpoint(request: ChatRequest) -> JSONResponse:
     """Handles chat requests through the NeSy agent and returns safe API errors."""
     try:
-        answer = chat_nesy_agent(request.message)
+        answer = chat_nesy_agent(
+            request.message,
+            history=[m.model_dump() for m in request.history],
+        )
         payload = {
             "status": "success",
             "message": request.message,

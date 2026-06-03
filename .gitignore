@@ -13,3 +13,5 @@ data_pipeline/data/raw/
 backend.egg-info/
 pytest_cache/
 ruff_cache/
+
+backend/scripts/eval_output/
