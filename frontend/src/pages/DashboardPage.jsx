@@ -53,6 +53,7 @@ async function loadForSkins(skins, days) {
 export default function DashboardPage() {
   // All skins (all sources) — for the market table
   const [skins, setSkins] = useState([]);
+  const [isLoadingSkins, setIsLoadingSkins] = useState(true);
 
   // Steam Market skins with history — for the chart browse panel
   const [steamSkins, setSteamSkins] = useState([]);
@@ -94,7 +95,12 @@ export default function DashboardPage() {
 
   // ── mount ─────────────────────────────────────────────────────────────────
   useEffect(() => {
-    axios.get(`${apiUrl}/skins`).then((r) => { setSkins(r.data); setCurrentPage(1); });
+    setIsLoadingSkins(true);
+    axios
+      .get(`${apiUrl}/skins`)
+      .then((r) => { setSkins(r.data); setCurrentPage(1); })
+      .catch((e) => console.error("load skins error", e))
+      .finally(() => setIsLoadingSkins(false));
     getSteamMarketSkins().then(setSteamSkins).catch(() => {});
     refreshDefault(30);
   }, []);
@@ -183,10 +189,10 @@ export default function DashboardPage() {
         </p>
         <div className="mt-10">
           <div className="stats-grid">
-            <StatCard title="Tracked Skins" value={totalSkins} />
-            <StatCard title="Average Price" value={`€${averagePrice.toFixed(2)}`} />
-            <StatCard title="Highest Price" value={`€${highestPrice.toFixed(2)}`} />
-            <StatCard title="Top Popular Skin" value={mostPopular ? mostPopular.name : "—"} />
+            <StatCard title="Tracked Skins" value={totalSkins} loading={isLoadingSkins} />
+            <StatCard title="Average Price" value={`€${averagePrice.toFixed(2)}`} loading={isLoadingSkins} />
+            <StatCard title="Highest Price" value={`€${highestPrice.toFixed(2)}`} loading={isLoadingSkins} />
+            <StatCard title="Top Popular Skin" value={mostPopular ? mostPopular.name : "—"} loading={isLoadingSkins} />
           </div>
         </div>
       </section>
@@ -336,7 +342,7 @@ export default function DashboardPage() {
           Market overview
         </h2>
         <p className="mx-auto mb-8 max-w-3xl text-center text-sm text-slate-400 md:text-base">
-          {totalSkins > 0 ? `${totalSkins.toLocaleString()} skins tracked across all sources` : "Loading…"}
+          {isLoadingSkins ? "Loading…" : `${totalSkins.toLocaleString()} skins tracked across all sources`}
         </p>
 
         {/* Sort controls */}

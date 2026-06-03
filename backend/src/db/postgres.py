@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import bindparam, create_engine, text
 from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from ..core.config import POSTGRES_URL
@@ -343,6 +343,60 @@ def fetch_skin_price_history_by_id(skin_id: int, days: int = 30) -> list[dict[st
         }
         for r in rows
     ]
+
+
+def fetch_price_changes_for_names(names: list[str], days: int = 14) -> dict[str, dict[str, Any]]:
+    """For each skin name, return its latest price and the % change over the last N days.
+
+    Matches inventory item names against `skin_price_history.skin_name`. The window is
+    anchored to the most recent record in the table (not NOW()), so it stays correct
+    even when the data is older than `days`. Names with no history are simply omitted.
+
+    Returns a dict keyed by skin_name: {"current_price", "start_price", "change_pct", "recorded_at"}.
+    """
+    if not names:
+        return {}
+
+    query = text("""
+        WITH filtered AS (
+            SELECT sph.skin_name, sph.recorded_at, sph.mean_price
+            FROM skin_price_history sph
+            WHERE sph.skin_name IN :names
+              AND sph.recorded_at >= NOW() - (:days || ' days')::INTERVAL
+        ),
+        ranked AS (
+            SELECT
+                skin_name,
+                FIRST_VALUE(mean_price) OVER w_desc AS current_price,
+                FIRST_VALUE(mean_price) OVER w_asc  AS start_price,
+                FIRST_VALUE(recorded_at) OVER w_desc AS recorded_at
+            FROM filtered
+            WINDOW
+                w_desc AS (PARTITION BY skin_name ORDER BY recorded_at DESC),
+                w_asc  AS (PARTITION BY skin_name ORDER BY recorded_at ASC)
+        )
+        SELECT DISTINCT skin_name, current_price, start_price, recorded_at
+        FROM ranked
+    """).bindparams(bindparam("names", expanding=True))
+
+    with _get_engine().connect() as conn:
+        try:
+            rows = conn.execute(query, {"names": names, "days": days}).mappings().all()
+        except Exception:
+            return {}
+
+    result: dict[str, dict[str, Any]] = {}
+    for r in rows:
+        current = float(r["current_price"] or 0)
+        start = float(r["start_price"] or 0)
+        change_pct = ((current - start) / start * 100) if start > 0 else 0.0
+        result[r["skin_name"]] = {
+            "current_price": current,
+            "start_price": start,
+            "change_pct": round(change_pct, 2),
+            "recorded_at": r["recorded_at"].isoformat() if r["recorded_at"] else None,
+        }
+    return result
 
 
 def fetch_ingestion_log_by_id(log_id: int) -> dict[str, Any] | None:

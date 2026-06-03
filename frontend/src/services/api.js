@@ -38,6 +38,11 @@ export async function getSkinHistory(skinId, days = 30) {
   return response.data;
 }
 
+export async function getInventoryPriceChanges(names, days = 14) {
+  const response = await api.post("/skins/price-changes", { names, days });
+  return response.data;
+}
+
 export async function searchSkins(q, limit = 10) {
   const response = await api.get("/skins/search", { params: { q, limit } });
   return response.data;

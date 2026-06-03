@@ -21,7 +21,7 @@ export default function HomePage() {
   const bannerActions = [
     () => navigate("/dashboard"),
     () => navigate("/chat"),
-    () => navigate("/investments"),
+    () => navigate("/profile"),
   ];
 
   useEffect(() => {

@@ -13,6 +13,7 @@ from ..db.postgres import (
     fetch_history_skin_count,
     fetch_latest_data_timestamp,
     fetch_most_expensive_skinport_skins,
+    fetch_price_changes_for_names,
     fetch_price_history_for_top_skins,
     fetch_skin_price_history_by_id,
     fetch_skinport_skin_by_id,
@@ -21,7 +22,13 @@ from ..db.postgres import (
     search_skins,
 )
 from ..db.vectorial import index_document, search_documents
-from ..schemas.requests import ChatRequest, ChatResponse, DocumentIndexRequest, SearchRequest
+from ..schemas.requests import (
+    ChatRequest,
+    ChatResponse,
+    DocumentIndexRequest,
+    PriceChangeRequest,
+    SearchRequest,
+)
 from ..services.agent import chat_nesy_agent
 from ..services.logs import fetch_logs
 
@@ -210,6 +217,24 @@ def get_price_history(limit: int = 5, days: int = 30) -> JSONResponse:
     """
     try:
         result = fetch_price_history_for_top_skins(limit=limit, days=days)
+        return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@router.post("/skins/price-changes")
+def get_price_changes(payload: PriceChangeRequest) -> JSONResponse:
+    """
+    Return latest price and % change over the last N days for a batch of skin names.
+
+    Used by the Profile inventory to match each owned item against its price history.
+    Names without history are omitted from the response.
+    """
+    try:
+        result = fetch_price_changes_for_names(names=payload.names, days=payload.days)
         return JSONResponse(content=jsonable_encoder(result), status_code=status.HTTP_200_OK)
     except Exception as e:
         return JSONResponse(

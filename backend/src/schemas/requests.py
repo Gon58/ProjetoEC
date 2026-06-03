@@ -27,6 +27,12 @@ class ChatRequest(BaseModel):
     message: str
 
 
+class PriceChangeRequest(BaseModel):
+    """Pedido de variação de preço para um lote de skins (por nome)."""
+    names: list[str] = Field(default_factory=list, max_length=2000)
+    days: int = Field(default=14, ge=1, le=365)
+
+
 class ChatResponse(BaseModel):
     """Modelo de resposta do endpoint de chat do agente."""
     status: str
